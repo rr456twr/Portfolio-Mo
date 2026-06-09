@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portfolio — MO</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Noto+Sans+TC:wght@300;400&family=Tenor+Sans&display=swap" rel="stylesheet">
+  <link href="https://fonts.cdnfonts.com/css/broadway" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap"rel="stylesheet"/>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+
+  <div id="cursor"></div>
+
+  <div id="scene">
+    <div id="page-bg"></div>
+    <div id="dark-bg"></div>
+    <div id="grid-lines"></div>
+
+    <nav id="nav">
+      <button class="nav-hamburger" id="nav-hamburger" aria-label="開啟選單" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="nav-overlay" id="nav-overlay"></div>
+      <div class="nav-links" id="nav-links">
+        <a href="./index.html">HOME</a>
+        <a href="./ui.html">MOBILE</a>
+        <a href="./web.html">WEB</a>
+        <a href="./ill.html">ILLUSTRATION</a>
+        <a href="./photography.html">PHOTOGRAPHY</a>
+      </div>
+      <a href="#" class="contact" id="nav-contact">CONTACT</a>
+    </nav>
+
+    <div id="hero-text">
+      <div class="slogan">
+        <p class="line line-1">Craft the vision</p>
+        <p class="line line-2">Code the feeling</p>
+        <p class="line line-3">Compose the unseen</p>
+      </div>
+      <div class="zh">
+        <p>現實不過是一層介面</p>
+        <p>我重新設計你看見它的方式</p>
+      </div>
+    </div>
+
+    <div id="portal"></div>
+
+    <!-- Dark section from 111.html -->
+    <div id="dark-content">
+      
+      
+      <div class="divider"></div>
+      <!--<div class="links">
+        <a href="#">UI / UX</a>
+        <a href="#">Web Design</a>
+        <a href="#">Photography</a>
+        <a href="#">Illustration</a>
+      </div>-->
+    </div>
+
+    <!-- ── EXPERIENCE SECTION ── -->
+    <div id="exp-bg-layer"></div>
+    <div id="experience-content">
+
+      <!-- LEFT: 2×2 staggered cards -->
+      <div class="exp-left">
+        <div class="exp-grid">
+
+          <article class="exp-card">
+            <span class="exp-idx">(01)</span>
+            <time class="exp-year">2020</time>
+            <h3 class="exp-role">長榮大學<br>航運管理學系 畢業</h3>
+            <ul class="exp-details">
+              <li>航空運輸業相關知識</li>
+              <li>港口貨物相關管理</li>
+            </ul>
+          </article>
+
+          <article class="exp-card exp-card--offset">
+            <span class="exp-idx">(02)</span>
+            <time class="exp-year">2021</time>
+            <h3 class="exp-role">曜捷運通有限公司<br>進出口文件人員</h3>
+            <ul class="exp-details">
+              <li>進出口貨物申請</li>
+              <li>與報關行 / 船公司確認相關訊息</li>
+              <li>主管上司交代之文件業務處理</li>
+            </ul>
+          </article>
+
+          <article class="exp-card">
+            <span class="exp-idx">(03)</span>
+            <time class="exp-year">2022</time>
+            <h3 class="exp-role">環營企業股份有限公司<br>行政人員</h3>
+            <ul class="exp-details">
+              <li>文書處理・接應客戶</li>
+              <li>上司交辦事項</li>
+            </ul>
+          </article>
+
+          <article class="exp-card exp-card--offset">
+            <span class="exp-idx">(04)</span>
+            <time class="exp-year">2023.03–2023.07</time>
+            <h3 class="exp-role">智遊旅程股份有限公司<br>UI / UX 設計師</h3>
+            <ul class="exp-details">
+              <li>Web / App UI 介面製作</li>
+              <li>UX 需求分析</li>
+              <li>產品測試</li>
+            </ul>
+          </article>
+
+        </div>
+      </div>
+
+      <!-- RIGHT: big title + divider + current role -->
+      <div class="exp-right">
+        <h2 class="exp-big-title">EXPERIENCE</h2>
+        <div class="exp-big-rule"></div>
+
+        <div class="exp-current">
+          <time class="exp-current-year">2024 —</time>
+          <h3 class="exp-current-role">元智大學<br>資訊技術人員</h3>
+          <ul class="exp-current-details">
+            <li>網頁技術支援 ／ 網站維護更新</li>
+            <li>無障礙網頁認證</li>
+            <li>活動直播支援</li>
+            <li>網頁．APP 視覺設計改版</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── ABOUT ME SECTION ── -->
+    <div id="about-content">
+      <div class="am-wrap">
+
+        <h2 class="am-title">ABOUT ME</h2>
+        <div class="am-rule" aria-hidden="true"></div>
+
+        <!-- Right: bio + gallery -->
+        <div class="am-right">
+          <div class="am-bio">
+            <p>多年跨產業的工作歷練，讓我在客戶應對、緊急應變與細節執行上累積了扎實的基礎。</p>
+            <p>不斷跨出舒適圈的過程，也讓我更理解團隊協作的價值與高壓環境下的決策能力。</p>
+            <p>設計對我而言，不只是視覺美感，而是貼近使用者的思考與解決問題的過程。</p>
+            <p>雖非本科系出身，但我以積極自學、持續實踐作為競爭力的核心，</p>
+            <p>並將設計、開發與 AI 工具整合為一套高效的個人工作流。</p>
+          </div>
+          <div class="am-gallery">
+            <figure class="am-tile"><img src="./pic/1 (1).jpg" alt="Photo 1" /></figure>
+            <figure class="am-tile"><img src="./pic/1 (4).jpg" alt="Photo 2" /></figure>
+            <figure class="am-tile"><img src="./pic/1 (2).jpg" alt="Photo 3" /></figure>
+            <figure class="am-tile"><img src="./pic/1 (3).jpg" alt="Photo 4" /></figure>
+          </div>
+        </div>
+
+        <!-- Left: portrait + caption -->
+        <div class="am-left">
+          <figure class="am-portrait">
+            <img src="./pic/2.png" alt="Portrait" />
+          </figure>
+          <p class="am-caption">不是科班出身，但一直很認真在學習。<br />喜歡創意，也喜歡把事情做完整。</p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── SKILLS SECTION ── -->
+    <div id="skills-content">
+      <div class="sk-wrap">
+
+        <div class="sk-header">
+          <h2 class="sk-big-title">SKILLS</h2>
+          <div class="sk-big-rule"></div>
+        </div>
+
+        <div class="sk-grid">
+
+          <!-- Card 1: Google Cert (spans 2 cols) -->
+          <div class="sk-card-wrap sk-card--wide">
+            <div class="sk-card-inner">
+              <div class="sk-front">
+                <div class="sk-icons">
+                  <div class="sk-ib sk-ib--g">G</div>
+                </div>
+                <div class="sk-foot">
+                  <div>
+                    <p class="sk-cat">CERTIFICATION</p>
+                    <p class="sk-title">GOOGLE<br>CERTIFICATE</p>
+                  </div>
+                  <span class="sk-arr">→</span>
+                </div>
+              </div>
+              <div class="sk-back">
+                <p class="sk-back-cat">CERTIFICATION</p>
+                <ul class="sk-back-list">
+                  <li>Google AI Workplace Literacy Certificate</li>
+                  <li>Google Cloud Certifications</li>
+                  <li>AI初級應用規劃師</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2: HTML CSS -->
+          <div class="sk-card-wrap">
+            <div class="sk-card-inner">
+              <div class="sk-front">
+                <div class="sk-icons">
+                  <div class="sk-ib sk-ib--css">CSS</div>
+                  <div class="sk-ib sk-ib--html">HTML</div>
+                </div>
+                <div class="sk-foot">
+                  <div>
+                    <p class="sk-cat">FRONTEND</p>
+                    <p class="sk-title">HTML<br>CSS</p>
+                  </div>
+                  <span class="sk-arr">→</span>
+                </div>
+              </div>
+              <div class="sk-back">
+                <p class="sk-back-cat">FRONTEND</p>
+                <ul class="sk-back-list">
+                  <li>網頁切版</li>
+                  <li>響應式設計</li>
+                  <li>動態效果</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 3: Procreate -->
+          <div class="sk-card-wrap">
+            <div class="sk-card-inner">
+              <div class="sk-front">
+                <div class="sk-icons">
+                  <div class="sk-ib sk-ib--pr"></div>
+                  <div class="sk-ib sk-ib--cs"></div>
+                </div>
+                <div class="sk-foot">
+                  <div>
+                    <p class="sk-cat">ILLUSTRATION</p>
+                    <p class="sk-title">PROCREATE<br>CLIP STUDIO</p>
+                  </div>
+                  <span class="sk-arr">→</span>
+                </div>
+              </div>
+              <div class="sk-back">
+                <p class="sk-back-cat">ILLUSTRATION</p>
+                <ul class="sk-back-list">
+                  <li>繪圖應用</li>
+                  <li>腳色設計</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 4: Illustrator -->
+          <div class="sk-card-wrap">
+            <div class="sk-card-inner">
+              <div class="sk-front">
+                <div class="sk-icons">
+                  <div class="sk-ib sk-ib--ai">Ai</div>
+                </div>
+                <div class="sk-foot">
+                  <div>
+                    <p class="sk-cat">VECTOR</p>
+                    <p class="sk-title">ADOBE<br>ILLUSTRATOR</p>
+                  </div>
+                  <span class="sk-arr">→</span>
+                </div>
+              </div>
+              <div class="sk-back">
+                <p class="sk-back-cat">VECTOR</p>
+                <ul class="sk-back-list">
+                  <li>Logo 設計</li>
+                  <li>向量插圖</li>
+                  <li>印刷排版</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 5: Photoshop -->
+          <div class="sk-card-wrap">
+            <div class="sk-card-inner">
+              <div class="sk-front">
+                <div class="sk-icons">
+                  <div class="sk-ib sk-ib--ps">Ps</div>
+                </div>
+                <div class="sk-foot">
+                  <div>
+                    <p class="sk-cat">VISUAL</p>
+                    <p class="sk-title">ADOBE<br>PHOTOSHOP</p>
+                  </div>
+                  <span class="sk-arr">→</span>
+                </div>
+              </div>
+              <div class="sk-back">
+                <p class="sk-back-cat">VISUAL</p>
+                <ul class="sk-back-list">
+                  <li>DM</li>
+                  <li>Banner</li>
+                  <li>宣傳物</li>
+                  <li>視覺合成</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 6: Video -->
+          <div class="sk-card-wrap">
+            <div class="sk-card-inner">
+              <div class="sk-front">
+                <div class="sk-icons">
+                  <div class="sk-ib sk-ib--dv">DV</div>
+                  <div class="sk-ib sk-ib--ae">Ae</div>
+                </div>
+                <div class="sk-foot">
+                  <div>
+                    <p class="sk-cat">VIDEO</p>
+                    <p class="sk-title">ADOBE EFFECT<br>DAVINCI</p>
+                  </div>
+                  <span class="sk-arr">→</span>
+                </div>
+              </div>
+              <div class="sk-back">
+                <p class="sk-back-cat">VIDEO</p>
+                <ul class="sk-back-list">
+                  <li>動態影片</li>
+                  <li>後期調色</li>
+                  <li>特效合成</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div id="scroll-hint">
+      <span>Scroll</span>
+      <div class="line"></div>
+    </div>
+  </div>
+
+  <div id="scroll-spacer" aria-hidden="true"></div>
+
+  <script src="main.js"></script>
+</body>
+</html>

@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PHOTOGRAPHY</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Noto+Sans+TC:wght@300;400&family=Tenor+Sans&display=swap" rel="stylesheet">
+<link href="https://fonts.cdnfonts.com/css/broadway" rel="stylesheet">
+<style>
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html, body { width:100%; height:100%; overflow:hidden; }
+:root { --font-menu: 'Amarna Light', 'Nirmala UI', sans-serif; }
+
+body {
+  background: #f9f8f6;
+  cursor: none;
+  font-family: 'Cormorant Garamond', serif;
+  user-select: none;
+  position: relative;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: url('./pic/bk-2.png') center center / cover no-repeat;
+  opacity: 1;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ── cursor ── */
+#cursor {
+  position: fixed;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(44,44,44,0.60);
+  background: rgba(44,44,44,0.04);
+  pointer-events: none;
+  z-index: 9999;
+  top: 0; left: 0;
+  transform: translate(-50%,-50%);
+  transition: width 0.2s, height 0.2s, border-color 0.2s;
+}
+#cursor.grabbing {
+  width: 24px; height: 24px;
+  border-color: rgba(44,44,44,0.90);
+  background: rgba(44,44,44,0.10);
+}
+@media (hover:none) and (pointer:coarse) {
+  body { cursor:auto; }
+  #cursor { display:none; }
+}
+
+/* ════════ NAV ════════ */
+#nav {
+  position: fixed;
+  top: 40px; left: 0; right: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: clamp(24px, 4vw, 32px) clamp(24px, 4vw, 56px);
+  gap: clamp(24px, 6vw, 85px);
+  z-index: 200;
+  --nav-fg: #222;
+}
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: clamp(16px, 2.2vw, 32px);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+#nav a {
+  font-family: var(--font-menu);
+  font-size: clamp(11px, 1.1vw, 16px);
+  font-weight: 400;
+  letter-spacing: 0.5em;
+  color: var(--nav-fg);
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: color 0.4s ease, border-color 0.4s ease, background 0.4s ease,
+              box-shadow 0.4s ease, font-weight 0.2s ease;
+  padding: 10px;
+  position: relative;
+}
+#nav a:not(.contact)::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  left: 10px;
+  right: 10px;
+  height: 1.5px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  opacity: 0;
+}
+#nav a:not(.contact):hover { font-weight: 700; }
+#nav a:not(.contact):hover::after { transform: scaleX(1); opacity: 1; }
+#nav a:not(.contact).nav-active { font-weight: 700; }
+#nav a:not(.contact).nav-active::after { transform: scaleX(1); opacity: 1; }
+#nav a.contact {
+  border: none;
+  background: #fff;
+  padding: 10px 22px;
+  border-radius: 999px;
+  font-weight: 700;
+  letter-spacing: 0.5em;
+  color: #222;
+  box-shadow:
+    0 2px 6px rgba(0,0,0,0.10),
+    0 8px 18px rgba(0,0,0,0.08);
+  transition: background 0.28s ease, color 0.28s ease, box-shadow 0.28s ease, border 0.28s ease;
+}
+#nav a.contact:hover {
+  background: #626262;
+  color: #fff !important;
+  border-radius: 24px;
+  box-shadow: 1px 1px 3px 0 rgba(0,0,0,0.40) inset;
+}
+#nav.nav-dark-mode a.contact {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.55);
+  color: #fff;
+  box-shadow: none;
+}
+#nav.nav-dark-mode a.contact:hover {
+  background: #fff;
+  border-color: transparent;
+  color: #222 !important;
+  box-shadow:
+    0 2px 6px rgba(0,0,0,0.10),
+    0 8px 18px rgba(0,0,0,0.08);
+}
+
+.nav-hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  z-index: 401;
+  flex-shrink: 0;
+}
+.nav-hamburger span {
+  display: block;
+  width: 22px;
+  height: 1.5px;
+  background: var(--nav-fg, #222);
+  border-radius: 2px;
+  transition: transform 0.3s, opacity 0.3s;
+  transform-origin: center;
+}
+.nav-hamburger.is-open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+.nav-hamburger.is-open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+.nav-hamburger.is-open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+.nav-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 350;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.nav-overlay.is-open { opacity: 1; }
+
+/* ════════ CANVAS VIEWPORT ════════ */
+#viewport {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  cursor: grab;
+  z-index: 1;
+}
+#viewport.grabbing { cursor: grabbing; }
+
+/* 長型畫布 — 寬度固定，高度很長 */
+#canvas {
+  position: absolute;
+  /* width/height set by JS */
+  will-change: transform;
+}
+
+/* ── 照片 ── */
+.photo-item {
+  position: absolute;
+  overflow: hidden;
+  box-shadow: 0 10px 50px rgba(0,0,0,0.13);
+  will-change: transform;
+  transition: box-shadow 0.3s;
+  z-index: 5;
+}
+.photo-item:hover {
+  box-shadow: 0 16px 64px rgba(0,0,0,0.20);
+  z-index: 10;
+}
+.photo-item img {
+  width:100%; height:100%;
+  object-fit:cover; display:block;
+  pointer-events:none;
+  transform: scale(1.04);
+  transition: transform 0.5s;
+}
+.photo-item:hover img { transform:scale(1.08); }
+
+/* ── 進度條（捲動深度）── */
+#progress-bar {
+  position: fixed;
+  right: 0; top: 0; bottom: 0;
+  width: 2px;
+  background: rgba(0,0,0,0.08);
+  z-index: 150;
+}
+#progress-thumb {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  background: rgba(0,0,0,0.28);
+  border-radius: 2px;
+  transition: height 0.1s, top 0.1s;
+}
+
+/* ── scroll hint ── */
+#scroll-hint {
+  position: fixed;
+  bottom: 36px; left: 50%;
+  transform: translateX(-50%);
+  z-index: 160;
+  display: flex; flex-direction: column;
+  align-items: center; gap: 8px;
+  color: rgba(0,0,0,0.28); font-size: 9px;
+  letter-spacing: 0.45em; text-transform: uppercase;
+  transition: opacity 0.6s; pointer-events: none;
+}
+#scroll-hint .sh-line {
+  width:1px; height:32px;
+  background:rgba(0,0,0,0.16);
+  animation:pulse 2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%,100%{transform:scaleY(1);opacity:.3;}
+  50%{transform:scaleY(.5);opacity:.8;}
+}
+
+/* ════════ RWD ════════ */
+@media (max-width: 768px) {
+  #nav {
+    padding: 14px 20px;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    top: 0;
+  }
+  .nav-hamburger { display: flex; }
+  .nav-overlay { display: block; pointer-events: none; }
+  .nav-overlay.is-open { pointer-events: auto; }
+  .nav-links {
+    position: fixed;
+    top: 0; right: -100%;
+    width: min(72vw, 280px);
+    height: 100dvh;
+    background: rgba(249,248,246,0.97);
+    backdrop-filter: blur(20px);
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 4px;
+    padding: 80px 36px 60px;
+    z-index: 400;
+    transition: right 0.38s cubic-bezier(0.4,0,0.2,1);
+  }
+  .nav-links.is-open { right: 0; }
+  .nav-links a {
+    font-size: 11px !important;
+    letter-spacing: 0.32em;
+    padding: 12px 0 !important;
+    color: #3a3a4a !important;
+    border-bottom: 1px solid rgba(0,0,0,0.07);
+    width: 100%;
+  }
+  .nav-links a:last-child { border-bottom: none; }
+  #nav-contact {
+    background: transparent !important;
+    border: 1px solid rgba(30,30,46,0.3) !important;
+    border-radius: 24px !important;
+    padding: 10px 18px !important;
+    margin-top: 20px;
+    align-self: flex-start;
+  }
+}
+
+@media (max-width: 640px) {
+  /* 手機上 viewport 從頂部貼齊，nav 浮在上面 */
+  #viewport {
+    top: 0;
+    overflow: hidden;
+  }
+  /* 照片不超出視窗左右 */
+  .photo-item {
+    max-width: calc(100vw - 8px);
+  }
+  /* 手機 hover 效果改為 active，避免 sticky hover */
+  .photo-item:active {
+    box-shadow: 0 16px 64px rgba(0,0,0,0.20);
+  }
+  /* scroll hint 位置 */
+  #scroll-hint { bottom: 20px; }
+  /* progress bar 細一點 */
+  #progress-bar { width: 1.5px; }
+}
+</style>
+</head>
+<body>
+
+<div id="cursor"></div>
+
+<nav id="nav">
+  <button class="nav-hamburger" id="nav-hamburger" aria-label="開啟選單" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="nav-overlay" id="nav-overlay"></div>
+  <div class="nav-links" id="nav-links">
+    <a href="./index.html">HOME</a>
+    <a href="./ui.html">MOBILE</a>
+    <a href="./web.html">WEB</a>
+    <a href="./ill.html">ILLUSTRATION</a>
+    <a href="./photography.html" class="nav-active">PHOTOGRAPHY</a>
+  </div>
+  <a href="#" class="contact" id="nav-contact">CONTACT</a>
+</nav>
+
+<div id="viewport">
+  <div id="canvas">
+    <svg id="deco-svg" style="position:absolute;top:0;left:0;width:100%;pointer-events:none;overflow:visible;z-index:0;" aria-hidden="true"></svg>
+  </div>
+</div>
+
+<div id="progress-bar"><div id="progress-thumb"></div></div>
+
+<div id="scroll-hint">
+  <span>Drag</span>
+  <div class="sh-line"></div>
+</div>
+
+<script>
+/* ══════════════════════════
+   26 張圖片路徑
+══════════════════════════ */
+const PHOTOS = [
+  './pic/2 (3).png',  './pic/2 (1).png',  './pic/2 (6).jpg',  './pic/2 (9).jpg',
+  './pic/2 (14).jpg',  './pic/2 (5).jpg',  './pic/2 (17).jpg',  './pic/2 (2).png',
+  './pic/1 (2).jpg',  './pic/2 (15).jpg', './pic/2 (3).jpg', './pic/2 (4).jpg',
+  './pic/1 (1).jpg', './pic/2 (16).jpg', './pic/2 (2).jpg', './pic/2 (12).jpg',
+  './pic/1 (3).jpg', './pic/2 (4).jpg', './pic/2 (13).jpg', './pic/2 (10).jpg',
+  './pic/2 (5).jpg', './pic/1 (4).jpg', './pic/2 (7).jpg', './pic/2 (11).jpg',
+  
+];
+
+// 'h' = 橫向, 'v' = 直向，順序跟 PHOTOS 一樣
+const ORIENTATIONS = [
+  'h','h','h','h','h',  // 1-5
+  'h','h','h','h','h',  // 6-10
+  'h','h','h','h','h',  // 11-15
+  'v','h','h','v','h',  // 16-20
+  'h','h','h','v','h',  // 21-25（依你實際照片改）
+  'h',                  // 26
+];
+
+/*
+  照片在畫布上的位置與尺寸
+  畫布寬度 = 視窗寬度（不橫移）
+  畫布高度 = CANVAS_H（JS 設定）
+  x / y    = 左上角（px，相對畫布）
+  w / h    = 尺寸（px）
+  rot      = 旋轉角度
+*/
+
+const NAV_H = 80; // nav 高度預留
+
+// 畫布寬度 = 視窗寬度，根據視窗動態計算
+function buildLayout(VW, VH) {
+  const W = VW;
+  const isMobile = VW < 640;
+
+  const L = Math.round(W * (isMobile ? 0.06 : 0.18));
+
+  const BIG   = Math.round(W * (isMobile ? 0.72 : 0.34));
+  const MID   = Math.round(W * (isMobile ? 0.55 : 0.26));
+  const SMALL = Math.round(W * (isMobile ? 0.40 : 0.18));
+
+  // 手機旋轉角度縮小，避免超出邊界
+  const rotScale = isMobile ? 0.35 : 1.0;
+
+  function h(w) { return Math.round(w * 0.68); }
+
+  const G = Math.round(VH * (isMobile ? 0.07 : 0.12));
+  let y = NAV_H + Math.round(VH * 0.10);
+  const layout = [];
+
+  function add(x, w, rot, offsetY = 0) {
+    const i = layout.length;
+    const ori = ORIENTATIONS[i] || 'h';
+    const imgH = ori === 'v'
+      ? Math.round(w * 1.35)
+      : Math.round(w * 0.68);
+    // 手機：x 置中並確保不超出邊界
+    const safeX = isMobile
+      ? Math.max(Math.round((W - w) / 2) + Math.round((x - Math.round((W - w) / 2)) * 0.3), 4)
+      : x;
+    layout.push({ x: safeX, y: y + offsetY, w, h: imgH, rot: rot * rotScale });
+  }
+
+  // 01 — 大圖偏左
+  add(L, BIG, -1.8);
+  y += h(BIG) + G;
+
+  // 02 03 — 中小錯位（右側）
+  add(Math.round(W * 0.32), MID, 1.5);
+  add(Math.round(W * 0.52), SMALL, -2.2, Math.round(h(MID) * 0.55));
+  y += h(MID) + Math.round(G * 1.1);
+
+  // 04 — 大圖偏右
+  add(Math.round(W * 0.44), BIG, 1.2);
+  y += h(BIG) + G;
+
+  // 05 06 — 左側兩張錯位
+  add(L, MID, -1.0);
+  add(Math.round(W * 0.30), SMALL, 2.0, Math.round(h(MID) * 0.60));
+  y += h(MID) + Math.round(G * 1.0);
+
+  // 07 — 中圖置中
+  add(Math.round(W * 0.36), MID, -0.8);
+  y += h(MID) + G;
+
+  // 08 09 — 右側大+小錯位
+  add(Math.round(W * 0.44), BIG, 1.8);
+  add(Math.round(W * 0.18), SMALL, -2.5, Math.round(h(BIG) * 0.45));
+  y += h(BIG) + Math.round(G * 1.0);
+
+  // 10 — 大圖偏左
+  add(L, BIG, -1.5);
+  y += h(BIG) + G;
+
+  // 11 12 13 — 三張散落
+  add(Math.round(W * 0.36), MID, 1.0);
+  add(Math.round(W * 0.16), SMALL, -2.0, -Math.round(h(SMALL) * 0.3));
+  add(Math.round(W * 0.58), SMALL, 2.2, Math.round(h(MID) * 0.55));
+  y += h(MID) + G;
+
+  // 14 — 大圖偏右
+  add(Math.round(W * 0.44), BIG, -1.2);
+  y += h(BIG) + G;
+
+  // 15 16 — 左右分開
+  add(L, MID, 1.5);
+  add(Math.round(W * 0.46), MID, -1.8, Math.round(h(MID) * 0.55));
+  y += h(MID) + Math.round(G * 1.1);
+
+  // 17 — 中圖偏左
+  add(Math.round(W * 0.20), MID, -0.6);
+  y += h(MID) + G;
+
+  // 18 19 — 右側大小錯位
+  add(Math.round(W * 0.42), BIG, 2.0);
+  add(Math.round(W * 0.16), SMALL, -1.5, Math.round(h(BIG) * 0.50));
+  y += h(BIG) + Math.round(G * 1.0);
+
+  // 20 — 大圖置中
+  add(Math.round(W * 0.32), BIG, 1.0);
+  y += h(BIG) + G;
+
+  // 21 22 — 左側錯位
+  add(L, SMALL, -2.2);
+  add(Math.round(W * 0.30), MID, 1.8, Math.round(h(SMALL) * 0.55));
+  y += h(MID) + Math.round(G * 1.0);
+
+  // 23 — 大圖偏右
+  add(Math.round(W * 0.44), BIG, -1.0);
+  y += h(BIG) + G;
+
+  // 24 25 26 — 最後三張散落收尾
+  add(Math.round(W * 0.18), SMALL, 1.5);
+  add(Math.round(W * 0.36), MID, -1.8, Math.round(h(SMALL) * 0.50));
+  add(Math.round(W * 0.56), SMALL, 2.5, Math.round(h(MID) * 0.30));
+  y += h(MID) + Math.round(VH * 0.15);
+
+  const CANVAS_H = y;
+  return { layout, CANVAS_H };
+}
+
+/* ════════ DOM 建立 ════════ */
+const viewport = document.getElementById('viewport');
+const canvas   = document.getElementById('canvas');
+
+let VW = window.innerWidth;
+let VH = window.innerHeight;
+let { layout, CANVAS_H } = buildLayout(VW, VH);
+
+canvas.style.width  = VW + 'px';
+canvas.style.height = CANVAS_H + 'px';
+
+const photoEls = PHOTOS.map((src, i) => {
+  const l = layout[i];
+  if (!l) return null;
+  const div = document.createElement('div');
+  div.className = 'photo-item';
+  div.style.cssText = `
+    left:${l.x}px; top:${l.y}px;
+    width:${l.w}px; height:${l.h}px;
+    transform:rotate(${l.rot}deg);
+  `;
+  const img = document.createElement('img');
+  img.src = src; img.alt = '';
+  img.loading = i < 6 ? 'eager' : 'lazy';
+  div.appendChild(img);
+  canvas.appendChild(div);
+  return div;
+}).filter(Boolean);
+
+/* ════════ 拖曳邏輯 ════════ */
+const cursor       = document.getElementById('cursor');
+const scrollHint   = document.getElementById('scroll-hint');
+const progressThumb= document.getElementById('progress-thumb');
+
+let camY    = 0;   // 目前畫布位移（負數 = 往上）
+let targetY = 0;
+let isDragging = false;
+let dragStartY = 0;
+let dragStartCamY = 0;
+let hasMoved = false;
+
+const NAV_HEIGHT = 72;
+function maxCamY() { return 0; }
+function minCamY() { return -(CANVAS_H - VH); }
+
+function clamp(v,lo,hi) { return Math.min(hi,Math.max(lo,v)); }
+function lerp(a,b,t)    { return a + (b-a)*t; }
+
+// 滑鼠拖曳
+viewport.addEventListener('mousedown', e => {
+  isDragging = true; hasMoved = false;
+  dragStartY = e.clientY;
+  dragStartCamY = targetY;
+  viewport.classList.add('grabbing');
+  cursor.classList.add('grabbing');
+});
+window.addEventListener('mousemove', e => {
+  cursor.style.left = e.clientX + 'px';
+  cursor.style.top  = e.clientY + 'px';
+  if (!isDragging) return;
+  const dy = e.clientY - dragStartY;
+  if (Math.abs(dy) > 3) hasMoved = true;
+  targetY = clamp(dragStartCamY + dy, minCamY(), maxCamY());
+});
+window.addEventListener('mouseup', () => {
+  isDragging = false;
+  viewport.classList.remove('grabbing');
+  cursor.classList.remove('grabbing');
+});
+
+// 觸控拖曳
+viewport.addEventListener('touchstart', e => {
+  isDragging = true; hasMoved = false;
+  dragStartY = e.touches[0].clientY;
+  dragStartCamY = targetY;
+}, { passive:true });
+window.addEventListener('touchmove', e => {
+  if (!isDragging) return;
+  const dy = e.touches[0].clientY - dragStartY;
+  if (Math.abs(dy) > 3) hasMoved = true;
+  targetY = clamp(dragStartCamY + dy, minCamY(), maxCamY());
+}, { passive:true });
+window.addEventListener('touchend', () => { isDragging = false; });
+
+// 滾輪
+viewport.addEventListener('wheel', e => {
+  e.preventDefault();
+  targetY = clamp(targetY - e.deltaY * 1.2, minCamY(), maxCamY());
+}, { passive:false });
+
+/* ════════ 手繪裝飾 ════════ */
+
+// 手繪矩形：角落超出、線條微抖
+function sketchRect(x, y, w, h, overshoot, jitter) {
+  const tl={x:x+(Math.random()-.5)*jitter,   y:y+(Math.random()-.5)*jitter};
+  const tr={x:x+w+(Math.random()-.5)*jitter, y:y+(Math.random()-.5)*jitter};
+  const br={x:x+w+(Math.random()-.5)*jitter, y:y+h+(Math.random()-.5)*jitter};
+  const bl={x:x+(Math.random()-.5)*jitter,   y:y+h+(Math.random()-.5)*jitter};
+
+  function edge(a, b) {
+    const dx=b.x-a.x, dy=b.y-a.y;
+    const len=Math.sqrt(dx*dx+dy*dy)||1;
+    const ux=dx/len, uy=dy/len;
+    const os=overshoot*(0.7+Math.random()*0.6);
+    const sx=a.x-ux*os, sy=a.y-uy*os;
+    const ex=b.x+ux*os, ey=b.y+uy*os;
+    const steps=8, pts=[];
+    for(let i=0;i<=steps;i++){
+      const t=i/steps;
+      pts.push({
+        x:sx+(ex-sx)*t+(Math.random()-.5)*jitter*1.2,
+        y:sy+(ey-sy)*t+(Math.random()-.5)*jitter*0.5,
+      });
+    }
+    return pts;
+  }
+
+  return [edge(tl,tr),edge(tr,br),edge(br,bl),edge(bl,tl)].map(pts=>{
+    let d=`M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
+    for(let i=1;i<pts.length;i++) d+=` L ${pts[i].x.toFixed(1)} ${pts[i].y.toFixed(1)}`;
+    return d;
+  });
+}
+
+// 手繪直線（橫或直）
+function sketchLine(x1, y1, x2, y2, jitter) {
+  const steps=10, pts=[];
+  for(let i=0;i<=steps;i++){
+    const t=i/steps;
+    pts.push({
+      x:x1+(x2-x1)*t+(Math.random()-.5)*jitter*1.5,
+      y:y1+(y2-y1)*t+(Math.random()-.5)*jitter*0.5,
+    });
+  }
+  let d=`M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
+  for(let i=1;i<pts.length;i++) d+=` L ${pts[i].x.toFixed(1)} ${pts[i].y.toFixed(1)}`;
+  return [d]; // 回傳陣列統一格式
+}
+
+function buildDecoItems(W, H, pLayout) {
+  const items = [];
+
+  /* ── 每張圖對應的裝飾型別 ──
+     rect  = 矩形框
+     hline = 橫線
+     vline = 直線
+     none  = 無裝飾
+  */
+  const TYPES = [
+    'rect','hline','none','rect','vline',
+    'none','rect','hline','none','rect',
+    'vline','none','rect','hline','rect',
+    'none','vline','rect','none','hline',
+    'rect','none','vline','rect','none','hline',
+  ];
+
+  pLayout.forEach((l, i) => {
+    if (!l) return;
+    const type = TYPES[i % TYPES.length];
+    if (type === 'none') return;
+
+    const goLeft = i % 2 === 0;
+    const overlap = 20 + Math.random()*35; // 伸入照片的量
+
+    if (type === 'rect') {
+      /* ── 矩形框尺寸 ──
+         改 rw 控制寬度，改 rh 控制高度（單位 px）*/
+      const rw = 80 + Math.random()*130;  // ← 改這裡調矩形寬度
+      const rh = 70 + Math.random()*110;  // ← 改這裡調矩形高度
+      const rx = goLeft
+        ? Math.max(l.x - rw + overlap, 8)
+        : Math.min(l.x + l.w - overlap, W - rw - 8);
+      const ry = l.y + Math.random()*Math.max(l.h - rh, 0);
+      items.push({ type:'rect', x:rx, y:ry, w:rw, h:rh, centerY:l.y+l.h/2 });
+
+    } else if (type === 'hline') {
+      /* ── 橫線長度 ──
+         改 lw 控制長度（單位 px）*/
+      const lw = 90 + Math.random()*120;  // ← 改這裡調橫線長度
+      const lx = goLeft
+        ? Math.max(l.x - lw + overlap, 8)
+        : Math.min(l.x + l.w - overlap, W - lw - 8);
+      const ly = l.y + l.h*(0.2 + Math.random()*0.6);
+      items.push({ type:'line', x1:lx, y1:ly, x2:lx+lw, y2:ly, centerY:l.y+l.h/2 });
+
+    } else if (type === 'vline') {
+      /* ── 直線長度 ──
+         改 lh 控制長度（單位 px）*/
+      const lh = 70 + Math.random()*150;   // ← 改這裡調直線長度
+      const lx = goLeft
+        ? Math.max(l.x - 18 - Math.random()*20, 8)
+        : Math.min(l.x + l.w + 18 + Math.random()*20, W - 8);
+      const ly = l.y + Math.random()*Math.max(l.h - lh, 0);
+      items.push({ type:'line', x1:lx, y1:ly, x2:lx, y2:ly+lh, centerY:l.y+l.h/2 });
+    }
+  });
+
+  return items;
+}
+
+const decoSvg = document.getElementById('deco-svg');
+decoSvg.style.height = CANVAS_H + 'px';
+let decoEls = [];
+
+function buildDecoLayer(W, H, pLayout) {
+  decoSvg.innerHTML = '';
+  decoEls = [];
+  buildDecoItems(W, H, pLayout).forEach(item => {
+    const dPaths = item.type === 'rect'
+      ? sketchRect(item.x, item.y, item.w, item.h, 8, 1.8)
+      : sketchLine(item.x1, item.y1, item.x2, item.y2, 1.8);
+
+    const pathEls = dPaths.map(d => {
+      const p = document.createElementNS('http://www.w3.org/2000/svg','path');
+      p.setAttribute('d', d);
+      p.setAttribute('fill','none');
+      p.setAttribute('stroke','rgba(15,12,8,0.82)');
+      p.setAttribute('stroke-width','1.2');
+      p.setAttribute('stroke-linecap','square');
+      p.setAttribute('stroke-linejoin','miter');
+      decoSvg.appendChild(p);
+      const len = p.getTotalLength();
+      p.style.strokeDasharray  = len;
+      p.style.strokeDashoffset = len;
+      return { el:p, len };
+    });
+    decoEls.push({ pathEls, centerY:item.centerY, drawn:0 });
+  });
+}
+
+buildDecoLayer(VW, CANVAS_H, layout);
+
+/* ════════ 主迴圈 ════════ */
+function tick() {
+  requestAnimationFrame(tick);
+
+  camY = lerp(camY, targetY, 0.10);
+  canvas.style.transform = `translateY(${camY}px)`;
+
+  const prog = (-camY) / Math.abs(minCamY());
+  const thumbH = Math.max(40, VH * (VH / CANVAS_H));
+  const thumbTop = (VH - thumbH) * prog;
+  progressThumb.style.height = thumbH + 'px';
+  progressThumb.style.top    = thumbTop + 'px';
+
+  if (Math.abs(camY) > 30) scrollHint.style.opacity = '0';
+
+  const visBottom = (-camY) + VH;
+  decoEls.forEach(deco => {
+    const inView = deco.centerY < visBottom - VH * 0.05;
+    const target = inView ? 1 : 0;
+    deco.drawn = lerp(deco.drawn, target, target > deco.drawn ? 0.025 : 0.040);
+    deco.pathEls.forEach(({el,len}) => {
+      el.style.strokeDashoffset = len * (1 - deco.drawn);
+    });
+  });
+}
+tick();
+
+// hint 3秒後自動消失
+setTimeout(() => { scrollHint.style.opacity = '0'; }, 3000);
+
+/* ════════ resize ════════ */
+window.addEventListener('resize', () => {
+  VW = window.innerWidth;
+  VH = window.innerHeight;
+  const result = buildLayout(VW, VH);
+  layout   = result.layout;
+  CANVAS_H = result.CANVAS_H;
+  canvas.style.width  = VW + 'px';
+  canvas.style.height = CANVAS_H + 'px';
+  decoSvg.style.height = CANVAS_H + 'px';
+  photoEls.forEach((el, i) => {
+    const l = layout[i];
+    if (!el || !l) return;
+    el.style.left   = l.x + 'px';
+    el.style.top    = l.y + 'px';
+    el.style.width  = l.w + 'px';
+    el.style.height = l.h + 'px';
+    el.style.transform = `rotate(${l.rot}deg)`;
+  });
+  targetY = clamp(targetY, minCamY(), maxCamY());
+  buildDecoLayer(VW, CANVAS_H, layout);
+});
+
+/* ════════ Hamburger ════════ */
+const hamburger  = document.getElementById('nav-hamburger');
+const navDrawer  = document.getElementById('nav-links');
+const navOverlay = document.getElementById('nav-overlay');
+
+function openMenu() {
+  hamburger.classList.add('is-open');
+  navDrawer.classList.add('is-open');
+  navOverlay.classList.add('is-open');
+  hamburger.setAttribute('aria-expanded', 'true');
+  document.body.style.overflow = 'hidden';
+}
+function closeMenu() {
+  hamburger.classList.remove('is-open');
+  navDrawer.classList.remove('is-open');
+  navOverlay.classList.remove('is-open');
+  hamburger.setAttribute('aria-expanded', 'false');
+  document.body.style.overflow = '';
+}
+hamburger.addEventListener('click', () => hamburger.classList.contains('is-open') ? closeMenu() : openMenu());
+navOverlay.addEventListener('click', closeMenu);
+navDrawer.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMenu));
+
+/* Nav active */
+const navLinkEls = Array.from(document.querySelectorAll('#nav a')).filter(a => !a.classList.contains('contact'));
+navLinkEls.forEach(a => {
+  a.addEventListener('click', e => {
+    navLinkEls.forEach(l => l.classList.remove('nav-active'));
+    a.classList.add('nav-active');
+    if (a.getAttribute('href') === '#') e.preventDefault();
+  });
+});
+</script>
+</body>
+</html>

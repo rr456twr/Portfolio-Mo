@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>POSTER</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Noto+Sans+TC:wght@300;400&family=Tenor+Sans&display=swap" rel="stylesheet">
+<link href="https://fonts.cdnfonts.com/css/broadway" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; background: #1a1e24; }
+
+:root {
+  --font-menu: 'Amarna Light', 'Nirmala UI', sans-serif;
+}
+
+.wrap {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+  font-family: 'Cormorant Garamond', serif;
+}
+
+/* ── 毛玻璃背景系統 ─────────────────────────────── */
+
+/* 層1：背景底圖（模糊放大，當成磨砂底） */
+.bg-base {
+  position: absolute;
+  inset: -40px;          /* 擴大避免模糊邊緣露白 */
+  z-index: 0;
+  background-color: #2a3040;
+  background-image: url('YOUR_BG.jpg');  /* 替換為你的背景圖 */
+  background-size: cover;
+  background-position: center;
+  filter: blur(28px) brightness(0.55) saturate(0.7);
+  transform: scale(1.08);
+}
+
+/* 層2：磨砂玻璃色調疊加 */
+.bg-frost {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  /* 多層漸層模擬毛玻璃反光與深度 */
+  background:
+    linear-gradient(
+      135deg,
+      rgba(180,195,215,0.10) 0%,
+      rgba(120,140,165,0.05) 40%,
+      rgba(80,100,125,0.08)  100%
+    ),
+    linear-gradient(
+      to bottom,
+      rgba(200,215,230,0.07) 0%,
+      rgba(30,40,55,0.30)   60%,
+      rgba(15,20,30,0.50)   100%
+    );
+  backdrop-filter: blur(0px); /* 這層負責色調 */
+}
+
+/* 層3：邊緣暈影（讓中央圖片更突出）*/
+.bg-vignette {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: radial-gradient(
+    ellipse 80% 70% at 50% 50%,
+    transparent 0%,
+    rgba(10,15,22,0.55) 100%
+  );
+}
+
+/* 層4：細微雜訊紋理（SVG filter 模擬毛玻璃顆粒感）*/
+.bg-noise {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  opacity: 0.045;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+}
+
+/* 層5：左右側毛玻璃面板（帶反光線條）*/
+.glass-panel {
+  position: absolute;
+  top: 0; bottom: 0;
+  width: calc(50% - min(190px, 27vw) - 20px);
+  z-index: 4;
+  background: rgba(160,175,195,0.06);
+  border: 0.5px solid rgba(220,235,255,0.10);
+}
+.glass-panel::before {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0; width: 1px;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(220,235,255,0.18) 30%,
+    rgba(220,235,255,0.22) 50%,
+    rgba(220,235,255,0.18) 70%,
+    transparent
+  );
+} */
+.glass-panel.left  { left: 0; }
+.glass-panel.left::before  { right: 0; }
+.glass-panel.right { right: 0; }
+.glass-panel.right::before { left: 0; } 
+
+/* ── 圖片 ─────────────────── */
+.img-viewport {
+  position: absolute;
+  left: 50%;
+  top: 60%;
+  transform: translate(-50%, -50%);
+  width: min(380px, 54vw);
+  height: min(560px, 79.5vw);
+  overflow: hidden;
+  z-index: 6;
+  box-shadow:
+    0 0 0 0.5px rgba(220,235,255,0.15),
+    0 20px 60px rgba(0,0,0,0.5),
+    0  4px 20px rgba(0,0,0,0.3);
+}
+.img-track {
+  position: absolute;
+  left: 0; right: 0; top: 0;
+  height: 300%;
+  will-change: transform;
+}
+.slide-unit {
+  position: absolute;
+  left: 0; right: 0;
+  width: 100%;
+  height: 33.333%;
+}
+.slide-unit img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* ── 數字 ────────────────── */
+.num-area {
+  position: absolute;
+  left: 0; right: 0;
+  top: calc(60% - min(280px, 39.75vw) - 170px);
+  height: 120px;
+  z-index: 7;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  pointer-events: none;
+  overflow: hidden;
+}
+.num-ticker {
+  position: relative;
+  width: 200px;
+  height: 120px;
+  overflow: hidden;
+}
+.num-digit {
+  position: absolute;
+  width: 100%;
+  text-align: center;
+  font-size: clamp(64px, 9vw, 110px);
+  font-weight: 300;
+  color: rgba(230,240,255,0.92);
+  text-shadow:
+    0 0 40px rgba(180,205,235,0.30),
+    0 2px  8px rgba(0,0,0,0.40);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  transform: translateY(0);
+  opacity: 1;
+  transition: transform 0.65s cubic-bezier(0.77,0,0.18,1),
+              opacity   0.55s ease;
+}
+.num-digit.exit-up    { transform: translateY(-115%); opacity: 0; }
+.num-digit.enter-down { transform: translateY(115%);  opacity: 0; }
+.num-digit.exit-down  { transform: translateY(115%);  opacity: 0; }
+.num-digit.enter-up   { transform: translateY(-115%); opacity: 0; }
+
+/* ── 左右文字 ────────────────────────────────────── */
+.left-label {
+  position: absolute;
+  left: clamp(1.5rem, 5vw, 10rem);
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 8;
+  color: #fff;
+  font-size: clamp(16px, 1.8vw, 24px);
+  letter-spacing: 0.07em;
+}
+.right-col {
+  position: absolute;
+  right: clamp(1.5rem, 5vw, 10rem);
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 8;
+  width: clamp(140px, 18vw, 400px);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.right-label {
+  color: #fff;
+  font-size: clamp(11px, 1.1vw, 15px);
+  letter-spacing: 0.04em;
+  line-height: 1.5;
+  text-align: right;
+  cursor: pointer;
+  white-space: normal;
+  width: 100%;
+  position: static;
+}
+.right-label .arr { margin-left: 10px; opacity: 0.6; }
+.right-label.in  { animation: rIn  0.55s cubic-bezier(0.22,1,0.36,1) forwards; }
+.right-label.out { animation: rOut 0.35s ease forwards; }
+@keyframes rIn  { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+@keyframes rOut { from{opacity:1;transform:translateY(0)}    to{opacity:0;transform:translateY(-10px)} }
+
+/* ── dots ────────────────────────────────────────── */
+.dots {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 8;
+  display: flex; gap: 8px; align-items: center;
+}
+.dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: rgba(200,215,240,0.28);
+  cursor: pointer; transition: all 0.3s;
+}
+.dot.active {
+  background: rgba(210,230,255,0.88);
+  transform: scale(1.35);
+}
+
+/* ── scroll hint ─────────────────────────────────── */
+.scroll-hint {
+  position: absolute;
+  bottom: 100px; left: 50%;
+  transform: translateX(-50%);
+  z-index: 8;
+  color: rgba(172, 180, 194, 0.781);
+  font-size: 16px; font-family: sans-serif; letter-spacing: 0.15em;
+  animation: blink 2.5s ease-in-out infinite;
+  pointer-events: none; transition: opacity 0.5s;
+}
+@keyframes blink { 0%,100%{opacity:0.28} 50%{opacity:0.65} }
+
+/* ════════ NAV ════════ */
+#nav {
+  position: fixed;
+  top: 40px; left: 0; right: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: clamp(24px, 4vw, 32px) clamp(24px, 4vw, 56px);
+  gap: clamp(24px, 6vw, 85px);
+  z-index: 200;
+  --nav-fg: #fff;
+}
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: clamp(16px, 2.2vw, 32px);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+#nav a {
+  font-family: var(--font-menu);
+  font-size: clamp(11px, 1.1vw, 16px);
+  font-weight: 400;
+  letter-spacing: 0.5em;
+  color: var(--nav-fg);
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: color 0.4s ease, border-color 0.4s ease, background 0.4s ease,
+              box-shadow 0.4s ease, font-weight 0.2s ease;
+  padding: 10px;
+  position: relative;
+}
+#nav a:not(.contact)::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  left: 10px;
+  right: 10px;
+  height: 1.5px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  opacity: 0;
+}
+#nav a:not(.contact):hover { font-weight: 700; }
+#nav a:not(.contact):hover::after { transform: scaleX(1); opacity: 1; }
+#nav a:not(.contact).nav-active { font-weight: 700; }
+#nav a:not(.contact).nav-active::after { transform: scaleX(1); opacity: 1; }
+#nav a.contact {
+  border: 1px solid #fff;
+  background: transparent;
+  padding: 10px 22px;
+  border-radius: 999px;
+  font-weight: 700;
+  letter-spacing: 0.5em;
+  color: #fff !important;
+  box-shadow: none;
+  transition: background 0.28s ease, color 0.28s ease, box-shadow 0.28s ease, border 0.28s ease;
+}
+#nav a.contact:hover {
+  background: #fff;
+  border-color: transparent;
+  color: #2F2D27 !important;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.10), 0 8px 18px rgba(0,0,0,0.08);
+}
+
+/* ── Hamburger ── */
+.nav-hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  z-index: 401;
+  flex-shrink: 0;
+}
+.nav-hamburger span {
+  display: block;
+  width: 22px;
+  height: 1.5px;
+  background: #fff;
+  border-radius: 2px;
+  transition: transform 0.3s, opacity 0.3s;
+  transform-origin: center;
+}
+.nav-hamburger.is-open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+.nav-hamburger.is-open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+.nav-hamburger.is-open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+.nav-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 350;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.nav-overlay.is-open { opacity: 1; }
+
+/* ════════ RWD ════════ */
+
+/* ── Tablet (768px – 1024px) ── */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .glass-panel { display: none; }
+
+  .img-viewport {
+    width: min(300px, 42vw);
+    height: min(442px, 62vw);
+    top: 58%;
+  }
+
+  .num-area {
+    top: calc(58% - min(221px, 31vw) - 80px);
+    bottom: auto;
+    height: 100px;
+  }
+
+  .left-label {
+    left: clamp(1rem, 3vw, 4rem);
+    font-size: clamp(14px, 1.6vw, 20px);
+  }
+
+  .right-col {
+    right: clamp(1rem, 3vw, 4rem);
+    width: clamp(160px, 22vw, 320px);
+  }
+}
+
+/* ── Mobile (≤ 768px) ── */
+@media (max-width: 768px) {
+  #nav {
+    top: 0;
+    padding: 14px 20px;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+  .nav-hamburger { display: flex; }
+  .nav-overlay { display: block; pointer-events: none; }
+  .nav-overlay.is-open { pointer-events: auto; }
+  .nav-links {
+    position: fixed;
+    top: 0; right: -100%;
+    width: min(72vw, 280px);
+    height: 100dvh;
+    background: rgba(15, 20, 30, 0.97);
+    backdrop-filter: blur(20px);
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 4px;
+    padding: 80px 36px 60px;
+    z-index: 400;
+    transition: right 0.38s cubic-bezier(0.4,0,0.2,1);
+  }
+  .nav-links.is-open { right: 0; }
+  .nav-links a {
+    font-size: 11px !important;
+    letter-spacing: 0.32em;
+    padding: 12px 0 !important;
+    color: rgba(210, 225, 245, 0.85) !important;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    width: 100%;
+  }
+  .nav-links a:last-child { border-bottom: none; }
+  #nav-contact {
+    background: transparent !important;
+    border: 1px solid #fff !important;
+    border-radius: 24px !important;
+    padding: 10px 18px !important;
+    margin-top: 20px;
+    align-self: flex-start;
+  }
+
+  .glass-panel { display: none; }
+  .scroll-hint { display: none; }
+  .dots { bottom: 16px; }
+
+  /* ── 手機版：flex 垂直排列，靠 flex 定位取代 calc ── */
+  .wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    padding-top: 70px;
+    padding-bottom: 48px;
+    height: 100dvh;
+    overflow: hidden;
+  }
+
+  /* 數字 */
+  .num-area {
+    position: relative;
+    margin-top: 100px;
+    bottom: auto; top: auto;
+    left: auto; right: auto;
+    height: 60px;
+    margin-bottom: 8px;
+    justify-content: center;
+  }
+  .num-ticker { width: 100px; height: 60px; }
+  .num-digit  { font-size: clamp(44px, 12vw, 64px); }
+
+  /* 圖片 */
+  .img-viewport {
+    position: relative;
+    top: auto; left: auto;
+    transform: none;
+    width: min(220px, 60vw);
+    height: min(325px, 88vw);
+    flex-shrink: 0;
+    margin-bottom: 16px;
+  }
+
+  /* 左側標題 */
+  .left-label {
+    position: relative;
+    top: auto; left: auto;
+    transform: none;
+    font-size: clamp(14px, 4vw, 18px);
+    text-align: center;
+    white-space: nowrap;
+    margin-bottom: 10px;
+  }
+
+  /* 右側文字 */
+  .right-col {
+    position: relative;
+    top: auto; right: auto; left: auto;
+    transform: none;
+    width: min(320px, 86vw);
+    align-items: center;
+    max-height: 22vh;
+    overflow-y: auto;
+  }
+  .right-label {
+    font-size: clamp(11px, 3vw, 13px);
+    text-align: center;
+    line-height: 1.75;
+    white-space: normal;
+  }
+}
+</style>
+</head>
+<body>
+<div class="wrap" id="wrap">
+
+  <!-- NAV -->
+  <nav id="nav">
+    <button class="nav-hamburger" id="nav-hamburger" aria-label="開啟選單" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="nav-overlay" id="nav-overlay"></div>
+    <div class="nav-links" id="nav-links">
+      <a href="./index.html">HOME</a>
+      <a href="./ui.html">MOBILE</a>
+      <a href="./web.html">WEB</a>
+      <a href="./ill.html" class="nav-active">ILLUSTRATION</a>
+      <a href="./photography.html">PHOTOGRAPHY</a>
+    </div>
+    <a href="#" class="contact" id="nav-contact">CONTACT</a>
+  </nav>
+
+ 
+
+  <!-- 數字 -->
+  <div class="num-area">
+    <div class="num-ticker">
+      <div class="num-digit" id="numCur">01</div>
+      <div class="num-digit enter-down" id="numNext">02</div>
+    </div>
+  </div>
+
+  <!-- 圖片 -->
+  <div class="img-viewport">
+    <div class="img-track" id="imgTrack">
+      <div class="slide-unit" style="top:0%">
+        <img src="./pic/3 (1).jpg">
+      </div>
+      <div class="slide-unit" style="top:33.333%">
+        <img src="./pic/3 (2).png">
+      </div>
+      <div class="slide-unit" style="top:66.666%">
+        <img src="./pic/3 (1).png">
+      </div>
+    </div>
+  </div>
+
+  <!-- 左右文字 -->
+<span class="left-label" id="leftLabel">《 信之所向 》</span>
+<div class="right-col" id="rightCol">
+    <span class="right-label">在暮色的溫暖光影裡，主角「安」仰望未來，心中交織著迷茫與徬徨。那份不確定，像風般輕拂過生命的旅程。然而，母親的溫柔始終如同陽光般環繞，成為最堅定的陪伴。無論前方有多少難關，愛都化作溫暖的力量， 牽引著安一步步走向希望。 <span class="arr">›</span></span>
+  </div>
+
+  <div class="dots" id="dots"></div>
+  <div class="scroll-hint" id="scrollHint">scroll ↓</div>
+</div>
+
+<script>
+const slides = [
+  { label: '在暮色的溫暖光影裡，主角「安」仰望未來，心中交織著迷茫與徬徨。那份不確定，像風般輕拂過生命的旅程。然而，母親的溫柔始終如同陽光般環繞，成為最堅定的陪伴。\n\n無論前方有多少難關，愛都化作溫暖的力量，牽引著安一步步走向希望。',    leftLabel: '《 信之所向 》' },
+  { label: '在這張畫面中，兩個身影靜靜地背對而坐，卻彼此相依，像是沉默之中仍緊扣著無形的牽繫。表面上看似疏離的距離，其實藏著難以言說的靠近——正如安與母親之間，那些未曾說出口的情感，在歲月裡默默流動。\n\n 一封信，一副耳機，成為彼此心意的載體。未能親口說出的關懷與思念，透過這些日常的信物被細細傳遞，如同輕柔卻綿長的回聲，在時間裡悄悄回響。', leftLabel: '《 信之所向 》' },
+  { label: '在暖黃色的光影中，時光彷彿被輕輕放慢。一碗簡單的陽春麵，承載著日常的溫度與不動聲色的牽掛。\n\n 畫面裡，一大一小的身影彼此相對，沒有張揚的情節，卻在細微的對視之中，流露出靜靜流動的關心與陪伴。《阿嬤的陽春麵》以阿強與小男孩為軸心，把那些平凡的相遇，燉煮成一段柔軟而真實的時光。\n\n 在這樣的日子裡，言語或許不多，情感卻從不缺席。就像一碗熱氣氤氳的麵，簡單卻溫熱，悄悄地，將人與人之間的距離拉近，也把記憶留在心裡最柔軟的地方。 ',  leftLabel: '《 阿嬤的陽春麵 》'   }, // ← 第三張換別的字
+];
+const N = slides.length;
+let current = 0, animating = false;
+let SLIDE_H = 560;
+
+
+
+const track      = document.getElementById('imgTrack');
+const numCur     = document.getElementById('numCur');
+const numNext    = document.getElementById('numNext');
+const rightCol   = document.getElementById('rightCol');
+const scrollHint = document.getElementById('scrollHint');
+const dotsEl     = document.getElementById('dots');
+
+// 動態取得圖片高度（RWD 用）
+function updateSlideH() {
+  SLIDE_H = document.querySelector('.img-viewport').offsetHeight;
+  track.style.transition = 'none';
+  track.style.transform = `translateY(${-current * SLIDE_H}px)`;
+}
+window.addEventListener('resize', updateSlideH);
+setTimeout(updateSlideH, 100); // 等字型/layout完成
+
+function fmt(n){ return String(n+1).padStart(2,'0'); }
+
+slides.forEach((_,i)=>{
+  const d = document.createElement('div');
+  d.className = 'dot'+(i===0?' active':'');
+  d.addEventListener('click',()=>goTo(i));
+  dotsEl.appendChild(d);
+});
+
+function updateDots(idx){
+  document.querySelectorAll('.dot').forEach((d,i)=>{
+    d.className='dot'+(i===idx?' active':'');
+  });
+}
+
+function animateNumber(toIdx, fromIdx){
+  const dir = toIdx > fromIdx ? 1 : -1;
+  numNext.textContent = fmt(toIdx);
+  numNext.style.transition = 'none';
+  numNext.className = 'num-digit '+(dir>0?'enter-down':'enter-up');
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{
+      numCur.style.transition = '';
+      numNext.style.transition = '';
+      numCur.className  = 'num-digit '+(dir>0?'exit-up':'exit-down');
+      numNext.className = 'num-digit';
+    });
+  });
+  setTimeout(()=>{
+    numCur.textContent = fmt(toIdx);
+    numCur.style.transition = 'none';
+    numCur.className = 'num-digit';
+    numNext.style.transition = 'none';
+    numNext.className = 'num-digit enter-down';
+  }, 720);
+}
+
+function goTo(idx){
+  if(animating||idx===current||idx<0||idx>=N) return;
+  animating = true;
+  const prev = current;
+  current = idx;
+  track.style.transition = 'transform 0.85s cubic-bezier(0.77,0,0.18,1)';
+  track.style.transform  = `translateY(${-current*SLIDE_H}px)`;
+  animateNumber(current, prev);
+  const old = rightCol.querySelector('.right-label');
+  if(old){ old.classList.add('out'); setTimeout(()=>old.remove(),350); }
+  setTimeout(()=>{
+    const el = document.createElement('span');
+    el.className = 'right-label in';
+el.innerHTML = slides[current].label.replace(/\n\n/g, '<br><br>') + ' <span class="arr">›</span>';    rightCol.appendChild(el);
+  },300);
+  updateDots(current);
+  document.getElementById('leftLabel').textContent = slides[current].leftLabel;
+  scrollHint.style.opacity = '0';
+  setTimeout(()=>{ animating=false; },900);
+}
+
+document.getElementById('wrap').addEventListener('wheel',e=>{
+  e.preventDefault();
+  if(e.deltaY>0) goTo(current+1); else goTo(current-1);
+},{passive:false});
+
+let ty=0;
+const wrap=document.getElementById('wrap');
+wrap.addEventListener('touchstart',e=>{ty=e.touches[0].clientY;});
+wrap.addEventListener('touchend',e=>{
+  const dy=ty-e.changedTouches[0].clientY;
+  if(dy>40) goTo(current+1);
+  if(dy<-40) goTo(current-1);
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowDown'||e.key==='ArrowRight') goTo(current+1);
+  if(e.key==='ArrowUp'||e.key==='ArrowLeft') goTo(current-1);
+});
+
+/* ════════ NAV ════════ */
+const hamburger  = document.getElementById('nav-hamburger');
+const navDrawer  = document.getElementById('nav-links');
+const navOverlay = document.getElementById('nav-overlay');
+
+function openMenu() {
+  hamburger.classList.add('is-open');
+  navDrawer.classList.add('is-open');
+  navOverlay.classList.add('is-open');
+  hamburger.setAttribute('aria-expanded', 'true');
+  document.body.style.overflow = 'hidden';
+}
+function closeMenu() {
+  hamburger.classList.remove('is-open');
+  navDrawer.classList.remove('is-open');
+  navOverlay.classList.remove('is-open');
+  hamburger.setAttribute('aria-expanded', 'false');
+  document.body.style.overflow = '';
+}
+hamburger.addEventListener('click', () => hamburger.classList.contains('is-open') ? closeMenu() : openMenu());
+navOverlay.addEventListener('click', closeMenu);
+navDrawer.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMenu));
+
+const navLinkEls = Array.from(document.querySelectorAll('#nav a')).filter(a => !a.classList.contains('contact'));
+navLinkEls.forEach(a => {
+  a.addEventListener('click', e => {
+    navLinkEls.forEach(l => l.classList.remove('nav-active'));
+    a.classList.add('nav-active');
+    if (a.getAttribute('href') === '#') e.preventDefault();
+  });
+});
+</script>
+</body>
+</html>

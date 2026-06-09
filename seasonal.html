@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SEASONAL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Noto+Sans+TC:wght@300;400&family=Tenor+Sans&display=swap" rel="stylesheet">
+<link href="https://fonts.cdnfonts.com/css/broadway" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root { --font-menu: 'Amarna Light', 'Nirmala UI', sans-serif; }
+
+  body {
+    background: #080808;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    font-family: 'Helvetica Neue', sans-serif;
+  }
+
+  #stage {
+    width: 100%;
+    height: 100vh;
+    position: relative;
+    overflow: hidden;
+    cursor: grab;
+    user-select: none;
+    touch-action: pan-y;
+  }
+
+  #stage.dragging { cursor: grabbing; }
+
+  #pcvs {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  #carousel {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+  }
+
+  .card {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    border-radius: 10px;
+    overflow: hidden;
+    transform-origin: center center;
+    will-change: transform, opacity;
+    box-shadow: none;
+  }
+
+  .card img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+  }
+
+  .card-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0);
+    transition: background 0.3s;
+    pointer-events: none;
+    border-radius: 10px;
+  }
+   .card-lbl {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  padding: 18px 10px 10px;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 500;
+  text-align: center;
+  letter-spacing: 0.6px;
+}
+
+  #dots {
+    position: absolute;
+    bottom: 36px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: row;
+    gap: 7px;
+    z-index: 10;
+  }
+
+  .dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    transition: background .3s, transform .3s;
+    cursor: pointer;
+  }
+  .dot.active {
+    background: #fff;
+    transform: scale(1.6);
+  }
+
+  #hint {
+    position: absolute;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: rgba(255,255,255,0.22);
+    font-size: 11px;
+    letter-spacing: 1.2px;
+    pointer-events: none;
+    transition: opacity .6s;
+    z-index: 10;
+  }
+
+  /* ════════ NAV ════════ */
+  #nav {
+    position: fixed;
+    top: 40px; left: 0; right: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: clamp(24px, 4vw, 32px) clamp(24px, 4vw, 56px);
+    gap: clamp(24px, 6vw, 85px);
+    z-index: 200;
+    --nav-fg: #fff;
+  }
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: clamp(16px, 2.2vw, 32px);
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  #nav a {
+    font-family: var(--font-menu);
+    font-size: clamp(11px, 1.1vw, 16px);
+    font-weight: 400;
+    letter-spacing: 0.5em;
+    color: var(--nav-fg);
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: color 0.4s ease, font-weight 0.2s ease,
+    background 0.4s ease, box-shadow 0.4s ease, border 0.4s ease;
+    padding: 10px;
+    position: relative;
+  }
+  #nav a:not(.contact)::after {
+    content: '';
+    position: absolute;
+    bottom: 4px; left: 10px; right: 10px;
+    height: 1.5px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    opacity: 0;
+  }
+  #nav a:not(.contact):hover { font-weight: 700; }
+  #nav a:not(.contact):hover::after { transform: scaleX(1); opacity: 1; }
+  #nav a:not(.contact).nav-active { font-weight: 700; }
+  #nav a:not(.contact).nav-active::after { transform: scaleX(1); opacity: 1; }
+  #nav a.contact {
+    border: 1px solid #fff;
+    background: transparent;
+    padding: 10px 22px;
+    border-radius: 999px;
+    font-weight: 700;
+    letter-spacing: 0.5em;
+    color: #fff;
+    box-shadow: none;
+    transition: background 0.28s ease, color 0.28s ease, box-shadow 0.28s ease, border 0.28s ease;
+  }
+  #nav a.contact:hover {
+    background: #fff;
+    border-color: transparent;
+    color: #222 !important;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.10), 0 8px 18px rgba(0,0,0,0.08);
+  }
+  .nav-hamburger {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    z-index: 401;
+    flex-shrink: 0;
+  }
+  .nav-hamburger span {
+    display: block;
+    width: 22px; height: 1.5px;
+    background: #fff;
+    border-radius: 2px;
+    transition: transform 0.3s, opacity 0.3s;
+    transform-origin: center;
+  }
+  .nav-hamburger.is-open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+  .nav-hamburger.is-open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+  .nav-hamburger.is-open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+  .nav-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 350;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .nav-overlay.is-open { opacity: 1; }
+
+  /* ── Tablet (769px – 1024px) ── */
+  @media (max-width: 1024px) and (min-width: 769px) {
+    #nav {
+      top: 0;
+      padding: 16px clamp(16px, 3vw, 40px);
+      gap: clamp(16px, 3vw, 48px);
+    }
+    #nav a { font-size: clamp(10px, 1.2vw, 13px); }
+  }
+
+  @media (max-width: 768px) {
+    #nav {
+      top: 0;
+      padding: 14px 20px;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    .nav-hamburger { display: flex; }
+    .nav-overlay { display: block; pointer-events: none; }
+    .nav-overlay.is-open { pointer-events: auto; }
+    .nav-links {
+      position: fixed;
+      top: 0; right: -100%;
+      width: min(72vw, 280px);
+      height: 100dvh;
+      background: rgba(15,20,30,0.97);
+      backdrop-filter: blur(20px);
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      gap: 4px;
+      padding: 80px 36px 60px;
+      z-index: 400;
+      transition: right 0.38s cubic-bezier(0.4,0,0.2,1);
+    }
+    .nav-links.is-open { right: 0; }
+    .nav-links a {
+      font-size: 11px !important;
+      letter-spacing: 0.32em;
+      padding: 12px 0 !important;
+      color: #fff !important;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      width: 100%;
+    }
+    .nav-links a:last-child { border-bottom: none; }
+    #nav-contact {
+      background: transparent !important;
+      border: 1px solid rgba(210,225,245,0.4) !important;
+      border-radius: 24px !important;
+      padding: 10px 18px !important;
+      margin-top: 20px;
+      align-self: flex-start;
+    }
+    #dots { bottom: 20px; gap: 6px; }
+    .dot  { width: 4px; height: 4px; }
+    #hint { font-size: 10px; bottom: 10px; }
+    #stage { touch-action: pan-y; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="nav">
+  <button class="nav-hamburger" id="nav-hamburger" aria-label="開啟選單" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="nav-overlay" id="nav-overlay"></div>
+  <div class="nav-links" id="nav-links">
+    <a href="./index.html">HOME</a>
+    <a href="./ui.html">MOBILE</a>
+    <a href="./web.html">WEB</a>
+    <a href="./ill.html" class="nav-active">ILLUSTRATION</a>
+    <a href="./photography.html">PHOTOGRAPHY</a>
+  </div>
+  <a href="#" class="contact" id="nav-contact">CONTACT</a>
+</nav>
+
+<div id="stage">
+  <canvas id="pcvs"></canvas>
+  <div id="carousel"></div>
+  <div id="dots"></div>
+  <div id="hint">← 左右拖曳切換 →</div>
+</div>
+
+<script>
+(function () {
+
+  /* ── poster data ─────────────────────────────────────── */
+  /* w/h = original image aspect ratio (portrait or landscape)
+     Replace src with your own image paths or URLs.
+     Leave src empty to use the generated placeholder.       */
+  const posters = [
+    { w: 1920, h: 685,  src: "./pic/5 (1).png" },
+    { w: 1920, h: 685,  src: "./pic/5 (18).png" },
+    { w: 1920, h: 685,  src: "./pic/5 (5).png" },
+    { w: 1920, h: 685,  src: "./pic/5 (13).png" },
+    { w: 1920, h: 685,  src: "./pic/5 (7).png" },
+    { w: 1920, h: 685,  src: "./pic/5 (14).png" },
+    { w: 6250, h: 2022,  src: "./pic/5 (4).png" },
+    { w: 263, h: 226,  src: "./pic/5 (12).png" },
+    { w: 3179, h: 4494,  src: "./pic/5 (2).png" },
+    { w: 3179, h: 4494,  src: "./pic/5 (3).png"},
+    { w: 1886, h: 2190,  src: "./pic/5 (6).png" },
+    { w: 1414, h: 2000,  src: "./pic/5 (16).png" },
+    { w: 1414, h: 2000,  src: "./pic/5 (17).png" },
+
+
+  ];
+
+  /* ── generate placeholder canvas poster ─────────────── */
+  function makePlaceholder(p) {
+    const cw = p.w, ch = p.h;
+    const c = document.createElement('canvas');
+    c.width = cw; c.height = ch;
+    const ctx = c.getContext('2d');
+
+    const g = ctx.createLinearGradient(0, 0, 0, ch);
+    g.addColorStop(0, p.color);
+    g.addColorStop(1, '#050505');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, cw, ch);
+
+    // rings
+    ctx.save(); ctx.globalAlpha = 0.1;
+    for (let r = 40; r < Math.max(cw, ch) * 1.2; r += 44) {
+      ctx.strokeStyle = p.accent; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.arc(cw / 2, ch * 0.42, r, 0, Math.PI * 2); ctx.stroke();
+    }
+    ctx.restore();
+
+    // emoji
+    const efs = Math.min(cw, ch) * 0.32;
+    ctx.font = `${efs}px serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = 'rgba(255,255,255,0.1)';
+    ctx.fillText(p.emoji, cw / 2, ch * 0.4);
+    ctx.shadowColor = p.accent; ctx.shadowBlur = 28;
+    ctx.fillStyle = '#fff';
+    ctx.fillText(p.emoji, cw / 2, ch * 0.4);
+    ctx.shadowBlur = 0;
+
+    // chinese label
+    const parts = p.label.split(' ');
+    const fs1 = Math.min(cw, ch) * 0.13;
+    ctx.font = `bold ${fs1}px serif`;
+    ctx.fillStyle = p.accent;
+    ctx.fillText(parts[0], cw / 2, ch * 0.66);
+
+    const fs2 = Math.min(cw, ch) * 0.065;
+    ctx.font = `500 ${fs2}px sans-serif`;
+    ctx.fillStyle = 'rgba(255,255,255,0.75)';
+    ctx.fillText(parts.slice(1).join(' '), cw / 2, ch * 0.76);
+
+    // border
+    ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.lineWidth = 2;
+    ctx.strokeRect(8, 8, cw - 16, ch - 16);
+
+    return c.toDataURL();
+  }
+
+  /* ── layout constants ────────────────────────────────── */
+  function getLayoutConsts() {
+    const W = window.innerWidth;
+    const H = window.innerHeight;
+    const isMobile = W < 769;
+    const isTablet = W >= 769 && W < 1025;
+    return {
+      MAX_FRONT_W: isMobile ? Math.min(W * 0.72, 360) : isTablet ? Math.min(W * 0.52, 560) : 720,
+      MAX_FRONT_H: isMobile ? Math.min(H * 0.52, 400) : isTablet ? Math.min(H * 0.55, 480) : 540,
+      ARC_X:       isMobile ? 0.52 : isTablet ? 0.62 : 0.7,
+      DRAG_SENS:   isMobile ? 0.45 : 0.35,
+    };
+  }
+  const N = posters.length;
+  const STEP = 360 / N;      // degrees per card
+
+  /* ── DOM build ───────────────────────────────────────── */
+  const stage    = document.getElementById('stage');
+  const carousel = document.getElementById('carousel');
+  const dotsEl   = document.getElementById('dots');
+  const hint     = document.getElementById('hint');
+
+  const cards = posters.map((p, i) => {
+    const el = document.createElement('div');
+    el.className = 'card';
+
+    const img = document.createElement('img');
+    img.src = p.src || makePlaceholder(p);
+
+    const lbl = document.createElement('div');
+    lbl.className = 'card-lbl';
+    lbl.textContent = p.label;
+
+    const overlay = document.createElement('div');
+    overlay.className = 'card-overlay';
+
+    el.appendChild(img);
+    el.appendChild(lbl);
+    el.appendChild(overlay);
+    carousel.appendChild(el);
+
+    // dot
+    const dot = document.createElement('div');
+    dot.className = 'dot';
+    dot.addEventListener('click', () => snapToIndex(i));
+    dotsEl.appendChild(dot);
+
+    return { el, p, overlay };
+  });
+
+  // Apply card dimensions based on current screen size
+  function applyCardSizes() {
+    const { MAX_FRONT_W, MAX_FRONT_H } = getLayoutConsts();
+    cards.forEach(c => {
+      const ar = c.p.w / c.p.h;
+      let dw, dh;
+      if (ar >= 1) { dw = MAX_FRONT_W; dh = Math.round(dw / ar); }
+      else         { dh = MAX_FRONT_H; dw = Math.round(dh * ar); }
+      c.dw = dw; c.dh = dh;
+      c.el.style.width  = dw + 'px';
+      c.el.style.height = dh + 'px';
+      c.el.style.marginLeft = (-dw / 2) + 'px';
+      c.el.style.marginTop  = (-dh / 2) + 'px';
+    });
+  }
+  applyCardSizes();
+  window.addEventListener('resize', applyCardSizes);
+
+  const dots = Array.from(dotsEl.querySelectorAll('.dot'));
+
+  /* ── state ───────────────────────────────────────────── */
+  let offset   = 0;   // current rotation angle (degrees)
+  let vel      = 0;   // momentum
+  let isDrag   = false;
+  let lastY    = 0;
+  let prevY    = 0;
+  let hasMoved = false;
+
+  function snapToIndex(i) {
+    const current = ((offset % 360) + 360) % 360;
+    // find nearest wrap
+    const base = offset - current;
+    const target = base + (i / N) * 360;
+    // pick shortest path
+    const diff = ((target - offset + 540) % 360) - 180;
+    offset += diff * 0.01;   // let physics close the gap
+    vel = diff * 0.08;
+  }
+
+  function getActiveIndex() {
+    const norm = ((offset % 360) + 360) % 360;
+    return Math.round(norm / STEP) % N;
+  }
+
+  /* ── layout / render ─────────────────────────────────── */
+  function layout() {
+    const W = stage.offsetWidth;
+    const H = stage.offsetHeight;
+    const cx = W / 2;
+    const cy = H / 2;
+    const { ARC_X } = getLayoutConsts();
+    const arcR = W * ARC_X;
+
+    cards.forEach((c, i) => {
+      const deg  = (i / N) * 360 - offset;
+      const rad  = deg * (Math.PI / 180);
+      const sinV = Math.sin(rad);   // -1 = left, +1 = right, 0 = front/back
+      const cosV = Math.cos(rad);   // +1 = front, -1 = back
+
+      const x = cx + sinV * arcR;
+      const depth = (cosV + 1) / 2;  // 0=back, 1=front
+      // centre card boosted to 1.5, others scale down from there
+      const scale   = (0.42 + 0.58 * depth) * (cosV > 0.97 ? 1.5 : 1);
+      const opacity = 0.25 + 0.75 * depth;
+      const bright  = cosV < 0 ? 0.3 + 0.7 * depth : 1;
+      const zIndex  = Math.round(depth * 50);
+      // overlay: 0 at centre, 0.2 on sides
+      const overlayA = cosV > 0.97 ? 0 : 0.2;
+
+      c.el.style.top       = cy + 'px';
+      c.el.style.left      = x + 'px';
+      c.el.style.zIndex    = zIndex;
+      c.el.style.transform = `scale(${scale}) rotateY(${sinV * 20}deg)`;
+      c.el.style.opacity   = opacity;
+      c.el.style.filter    = bright < 1 ? `brightness(${bright.toFixed(2)})` : 'none';
+      c.overlay.style.background = `rgba(0,0,0,${overlayA})`;
+    });
+
+    const ai = getActiveIndex();
+    dots.forEach((d, i) => d.classList.toggle('active', i === ai));
+  }
+
+  /* ── animation loop ──────────────────────────────────── */
+  function tick() {
+    if (!isDrag) {
+      if (Math.abs(vel) > 0.08) {
+        vel   *= 0.92;
+        offset += vel;
+      } else {
+        vel = 0;
+        const snap   = Math.round(offset / STEP) * STEP;
+        offset += (snap - offset) * 0.1;
+      }
+    }
+    layout();
+    requestAnimationFrame(tick);
+  }
+
+  /* ── drag: mouse ─────────────────────────────────────── */
+  stage.addEventListener('mousedown', e => {
+    isDrag = true; hasMoved = false;
+    lastY = e.clientX; prevY = e.clientX;
+    vel = 0;
+    stage.classList.add('dragging');
+    hint.style.opacity = '0';
+  });
+
+  window.addEventListener('mousemove', e => {
+    if (!isDrag) return;
+    const { DRAG_SENS } = getLayoutConsts();
+    const dx = e.clientX - lastY;
+    offset   -= dx * DRAG_SENS;
+    vel       = -(e.clientX - prevY) * DRAG_SENS;
+    prevY     = lastY;
+    lastY     = e.clientX;
+    hasMoved  = true;
+  });
+
+  window.addEventListener('mouseup', () => {
+    if (!isDrag) return;
+    isDrag = false;
+    stage.classList.remove('dragging');
+    if (!hasMoved) return;
+    const snap = Math.round(offset / STEP) * STEP;
+    vel = (snap - offset) * 0.06;
+  });
+
+  /* ── drag: touch ─────────────────────────────────────── */
+  stage.addEventListener('touchstart', e => {
+    isDrag = true; hasMoved = false;
+    lastY = e.touches[0].clientX; prevY = lastY;
+    vel = 0;
+    hint.style.opacity = '0';
+  }, { passive: true });
+
+  stage.addEventListener('touchmove', e => {
+    if (!isDrag) return;
+    const { DRAG_SENS } = getLayoutConsts();
+    const dx = e.touches[0].clientX - lastY;
+    offset   -= dx * DRAG_SENS;
+    vel       = -(e.touches[0].clientX - prevY) * DRAG_SENS;
+    prevY     = lastY;
+    lastY     = e.touches[0].clientX;
+    hasMoved  = true;
+  }, { passive: true });
+
+  stage.addEventListener('touchend', () => {
+    isDrag = false;
+    const snap = Math.round(offset / STEP) * STEP;
+    vel = (snap - offset) * 0.06;
+  });
+
+  /* ── particles ───────────────────────────────────────── */
+  const pCvs = document.getElementById('pcvs');
+  const pCtx = pCvs.getContext('2d');
+
+  function resizePcvs() {
+    pCvs.width  = stage.offsetWidth;
+    pCvs.height = stage.offsetHeight;
+  }
+  resizePcvs();
+  window.addEventListener('resize', resizePcvs);
+
+  const COLS = ['#FFD700', '#FF6060', '#9966CC', '#44AAFF', '#44DD99'];
+  const pts = Array.from({ length: 55 }, () => ({
+    x:   Math.random() * pCvs.width,
+    y:   Math.random() * pCvs.height,
+    r:   Math.random() * 1.4 + 0.3,
+    vx:  (Math.random() - .5) * 0.18,
+    vy:  (Math.random() - .5) * 0.18,
+    a:   Math.random() * 0.35 + 0.08,
+    col: COLS[Math.floor(Math.random() * COLS.length)]
+  }));
+
+  (function pAnim() {
+    pCtx.clearRect(0, 0, pCvs.width, pCvs.height);
+    pts.forEach(p => {
+      pCtx.beginPath();
+      pCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      pCtx.fillStyle = p.col;
+      pCtx.globalAlpha = p.a;
+      pCtx.fill();
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < -5) p.x = pCvs.width + 5;
+      if (p.x > pCvs.width + 5) p.x = -5;
+      if (p.y < -5) p.y = pCvs.height + 5;
+      if (p.y > pCvs.height + 5) p.y = -5;
+    });
+    pCtx.globalAlpha = 1;
+    requestAnimationFrame(pAnim);
+  })();
+
+  /* ── start ───────────────────────────────────────────── */
+  tick();
+  setTimeout(() => { hint.style.opacity = '1'; }, 600);
+  setTimeout(() => { hint.style.opacity = '0'; }, 3000);
+
+  /* ════════ NAV ════════ */
+  const hamburger  = document.getElementById('nav-hamburger');
+  const navDrawer  = document.getElementById('nav-links');
+  const navOverlay = document.getElementById('nav-overlay');
+
+  function openMenu() {
+    hamburger.classList.add('is-open');
+    navDrawer.classList.add('is-open');
+    navOverlay.classList.add('is-open');
+    hamburger.setAttribute('aria-expanded', 'true');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeMenu() {
+    hamburger.classList.remove('is-open');
+    navDrawer.classList.remove('is-open');
+    navOverlay.classList.remove('is-open');
+    hamburger.setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = '';
+  }
+  hamburger.addEventListener('click', () => hamburger.classList.contains('is-open') ? closeMenu() : openMenu());
+  navOverlay.addEventListener('click', closeMenu);
+  navDrawer.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMenu));
+
+  const navLinkEls = Array.from(document.querySelectorAll('#nav a')).filter(a => !a.classList.contains('contact'));
+  navLinkEls.forEach(a => {
+    a.addEventListener('click', e => {
+      navLinkEls.forEach(l => l.classList.remove('nav-active'));
+      a.classList.add('nav-active');
+      if (a.getAttribute('href') === '#') e.preventDefault();
+    });
+  });
+})();
+</script>
+</body>
+</html>
