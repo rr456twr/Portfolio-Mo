@@ -16,6 +16,7 @@
     html { scroll-behavior: smooth; }
 
     body {
+      
       background: #F1F2F4;
       font-family: var(--font-menu);
       overflow-x: hidden;
@@ -200,10 +201,41 @@
         gap: 24px;
       }
     }
+
+  body { cursor: none; }
+
+#cursor {
+  position: fixed;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  top: 0; left: 0;
+  transform: translate(-50%, -50%);
+  transition: background 0.4s ease, border-color 0.4s ease, transform 0.12s ease;
+  background: rgba(200, 195, 185, 0.08);
+  border: 1.5px solid rgba(200, 195, 185, 0.75);
+  mix-blend-mode: difference;
+}
+
+#cursor::after {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgb(200, 195, 185);
+  transition: background 0.4s ease;
+}
+
+
   </style>
 </head>
 <body>
-
+  <div id="cursor"></div>
   <!-- NAV -->
   <nav id="nav">
     <button class="nav-hamburger" id="nav-hamburger" aria-label="開啟選單" aria-expanded="false">
@@ -257,6 +289,12 @@
         if (a.getAttribute('href') === '#') e.preventDefault();
       });
     });
+
+  const cursor = document.getElementById('cursor');
+document.addEventListener('mousemove', (e) => {
+  cursor.style.left = e.clientX + 'px';
+  cursor.style.top  = e.clientY + 'px';
+});
   </script>
 </body>
 </html>

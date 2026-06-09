@@ -505,9 +505,38 @@ html, body { width: 100%; height: 100%; background: #1a1e24; }
     white-space: normal;
   }
 }
+body { cursor: none; }
+
+#cursor {
+  position: fixed;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  top: 0; left: 0;
+  transform: translate(-50%, -50%);
+  transition: background 0.4s ease, border-color 0.4s ease, transform 0.12s ease;
+  background: rgba(200, 195, 185, 0.08);
+  border: 1.5px solid rgba(200, 195, 185, 0.75);
+  mix-blend-mode: difference;
+}
+
+#cursor::after {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgb(200, 195, 185);
+  transition: background 0.4s ease;
+}
 </style>
 </head>
 <body>
+  <div id="cursor"></div>
 <div class="wrap" id="wrap">
 
   <!-- NAV -->
@@ -695,6 +724,11 @@ navLinkEls.forEach(a => {
     a.classList.add('nav-active');
     if (a.getAttribute('href') === '#') e.preventDefault();
   });
+});
+const cursor = document.getElementById('cursor');
+document.addEventListener('mousemove', (e) => {
+  cursor.style.left = e.clientX + 'px';
+  cursor.style.top  = e.clientY + 'px';
 });
 </script>
 </body>
