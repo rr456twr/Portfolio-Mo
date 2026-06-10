@@ -14,6 +14,7 @@
     background: #060606;
     width: 100vw;
     height: 100vh;
+    height: 100dvh;
     overflow: hidden;
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     user-select: none;
@@ -25,7 +26,7 @@
 
   #hint {
     position: fixed;
-    bottom: 28px;
+    bottom: max(28px, env(safe-area-inset-bottom, 0px) + 16px);
     left: 50%;
     transform: translateX(-50%);
     color: rgba(255,255,255,0.25);
@@ -103,7 +104,7 @@
   /* Close X — nav の下に移動 */
   #close-btn {
     position: fixed;
-    top: 100px;
+    top: clamp(70px, 12vh, 100px);
     right: 32px;
     width: 36px;
     height: 36px;
@@ -117,7 +118,7 @@
 /* ════════ NAV ════════ */
 #nav {
   position: fixed;
-  top: 40px; left: 0; right: 0;
+  top: 0; left: 0; right: 0;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -267,8 +268,8 @@
     margin-top: 20px;
     align-self: flex-start;
   }
-  #close-btn { top: 70px; right: 20px; width: 44px; height: 44px; }
-  #hint { font-size: 9px; bottom: 20px; letter-spacing: 0.18em; }
+  #close-btn { top: clamp(56px, 10vh, 80px); right: 20px; width: 44px; height: 44px; }
+  #hint { font-size: 9px; bottom: max(20px, env(safe-area-inset-bottom, 0px) + 12px); letter-spacing: 0.18em; }
 }
   #close-btn.show {
     opacity: 1;
@@ -335,7 +336,7 @@
 // Config
 // ─────────────────────────────────────────────
 const CARD_COUNT   = 16;
-const CARD_BASE    = 210;   // 基準長邊 px，比例由圖片決定
+const CARD_BASE    = 210;   // 基準長邊 px
 const PERSPECTIVE  = 900;
 const FRICTION     = 0.88;
 const HOLD_MS      = 520;   // ms to hold before pull starts
@@ -363,16 +364,24 @@ const lbCtx      = lbCanvas.getContext('2d');
 const closeBtn   = document.getElementById('close-btn');
 
 function resize() {
-  canvas.width  = window.innerWidth;
-  canvas.height = window.innerHeight;
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  canvas.width  = Math.round(w * DPR);
+  canvas.height = Math.round(h * DPR);
+  canvas.style.width  = w + 'px';
+  canvas.style.height = h + 'px';
+  ctx.scale(DPR, DPR);
 }
 resize();
-window.addEventListener('resize', resize);
+window.addEventListener('resize', () => {
+  resize();
+  if (lightboxOpen) closeLightbox();
+});
 
 // ─────────────────────────────────────────────
 // Sphere layout
 // ─────────────────────────────────────────────
-let BASE_RADIUS = () => Math.min(canvas.width, canvas.height) * 0.40;
+let BASE_RADIUS = () => Math.min(window.innerWidth, window.innerHeight) * 0.40;
 
 function fibSphere(n) {
   const pts = [], golden = Math.PI * (3 - Math.sqrt(5));
@@ -427,28 +436,21 @@ const BG = ['#0d1b2a','#1b1b2f','#0f2027','#1a0a2e','#071a1f','#1f0a14','#0a1f0d
 
 const imgCache = {};
 function getImg(i) {
-  const { w, h } = getCardWH(i);
-  const key = `${i}-${w}-${h}`;
-  if (imgCache[key]) return imgCache[key];
-
   const src = loadedImgs[i % loadedImgs.length];
 
-  // 未載入先回傳純色佔位符（不 cache）
-  if (!src || !src.complete || !src.naturalWidth) {
-    const oc = document.createElement('canvas');
-    oc.width = w; oc.height = h;
-    oc.getContext('2d').fillStyle = BG[i % BG.length];
-    oc.getContext('2d').fillRect(0, 0, w, h);
-    return oc;
+  // 圖片已載入：直接回傳原始 Image，讓瀏覽器用原生解析度繪製
+  if (src && src.complete && src.naturalWidth) {
+    return src;
   }
 
-  // DPR 倍率高解析 offscreen canvas
+  // 未載入先回傳純色佔位符（不 cache）
+  const key = `placeholder-${i}`;
+  if (imgCache[key]) return imgCache[key];
+  const { w, h } = getCardWH(i);
   const oc = document.createElement('canvas');
-  oc.width  = Math.round(w * DPR);
-  oc.height = Math.round(h * DPR);
-  const c = oc.getContext('2d');
-  c.scale(DPR, DPR);
-  c.drawImage(src, 0, 0, w, h);
+  oc.width = w; oc.height = h;
+  oc.getContext('2d').fillStyle = BG[i % BG.length];
+  oc.getContext('2d').fillRect(0, 0, w, h);
   imgCache[key] = oc;
   return oc;
 }
@@ -476,7 +478,7 @@ let sphereScaleTarget = 1.0;
 const SCALE_LERP      = 0.10;
 
 function project(p3) {
-  const cx = canvas.width/2, cy = canvas.height/2;
+  const cx = window.innerWidth/2, cy = window.innerHeight/2; // CSS px (ctx已scale DPR)
   const sz = p3.z * sphereScale;
   const fov = PERSPECTIVE / (PERSPECTIVE + sz);
   return { sx: cx + p3.x*sphereScale*fov, sy: cy + p3.y*sphereScale*fov, fov, worldZ: p3.z };
@@ -570,7 +572,7 @@ function openLightbox(idx, startRect) {
   // Lightbox target: centered, keep original ratio
   const { w: imgW, h: imgH } = getCardWH(idx);
   const imgRatio = imgW / imgH;
-  const isMobile = canvas.width < 769;
+  const isMobile = window.innerWidth < 769;
   const maxW = canvas.width  * (isMobile ? 0.95 : 0.98);
   const maxH = canvas.height * (isMobile ? 0.92 : 0.98);
   let targetW = Math.min(LB_LONG, maxW);
@@ -809,7 +811,7 @@ const CARD_SCALE_LERP = 0.08; // 越小越慢，0.08 約 0.5 秒過渡
 function draw() {
   sphereScale += (sphereScaleTarget - sphereScale) * SCALE_LERP;
 
-  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.clearRect(0,0,window.innerWidth,window.innerHeight);
 
   const transformed = basePositions.map((p,i) => {
     const w  = applyRot(rot, { x:p.x*BASE_RADIUS(), y:p.y*BASE_RADIUS(), z:p.z*BASE_RADIUS() });

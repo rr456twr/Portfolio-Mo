@@ -260,7 +260,7 @@ html, body { width: 100%; height: 100%; background: #1a1e24; }
 /* ════════ NAV ════════ */
 #nav {
   position: fixed;
-  top: 40px; left: 0; right: 0;
+  top: 0; left: 0; right: 0;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -324,7 +324,9 @@ html, body { width: 100%; height: 100%; background: #1a1e24; }
   box-shadow: 0 2px 6px rgba(0,0,0,0.10), 0 8px 18px rgba(0,0,0,0.08);
 }
 
-/* ── Hamburger ── */
+@media (hover: none), (pointer: coarse) {
+  #cursor { display: none; }
+}
 .nav-hamburger {
   display: none;
   flex-direction: column;
@@ -447,8 +449,8 @@ html, body { width: 100%; height: 100%; background: #1a1e24; }
     align-items: center;
     justify-content: center;
     gap: 0;
-    padding-top: 70px;
-    padding-bottom: 48px;
+    padding-top: 64px;
+    padding-bottom: max(52px, env(safe-area-inset-bottom, 16px) + 36px);
     height: 100dvh;
     overflow: hidden;
   }
@@ -456,11 +458,11 @@ html, body { width: 100%; height: 100%; background: #1a1e24; }
   /* 數字 */
   .num-area {
     position: relative;
-    margin-top: 100px;
+    margin-top: 0;
     bottom: auto; top: auto;
     left: auto; right: auto;
     height: 60px;
-    margin-bottom: 8px;
+    margin-bottom: 4px;
     justify-content: center;
   }
   .num-ticker { width: 100px; height: 60px; }
@@ -495,8 +497,9 @@ html, body { width: 100%; height: 100%; background: #1a1e24; }
     transform: none;
     width: min(320px, 86vw);
     align-items: center;
-    max-height: 22vh;
+    max-height: 26vh;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
   .right-label {
     font-size: clamp(11px, 3vw, 13px);
@@ -505,7 +508,10 @@ html, body { width: 100%; height: 100%; background: #1a1e24; }
     white-space: normal;
   }
 }
-body { cursor: none; }
+/* cursor: none 只在桌機（有滑鼠的裝置）啟用 */
+@media (hover: hover) and (pointer: fine) {
+  body { cursor: none; }
+}
 
 #cursor {
   position: fixed;
@@ -533,6 +539,50 @@ body { cursor: none; }
   background: rgb(200, 195, 185);
   transition: background 0.4s ease;
 }
+  /* ── 超小螢幕 (≤ 390px) ── */
+  @media (max-width: 390px) {
+    .img-viewport {
+      width: min(190px, 55vw);
+      height: min(280px, 80vw);
+    }
+    .num-digit { font-size: clamp(36px, 11vw, 54px); }
+    .left-label { font-size: clamp(12px, 3.5vw, 15px); }
+    .right-col { max-height: 20vh; }
+  }
+
+  /* ── 橫置手機 ── */
+  @media (max-height: 500px) and (orientation: landscape) {
+    .wrap {
+      padding-top: 52px;
+      padding-bottom: 36px;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+    }
+    .num-area { display: none; }
+    .img-viewport {
+      position: relative;
+      top: auto; left: auto; transform: none;
+      width: auto;
+      height: min(70vh, 300px);
+      flex-shrink: 0;
+      margin-bottom: 0;
+    }
+    .left-label {
+      position: relative;
+      top: auto; left: auto; transform: none;
+      writing-mode: vertical-rl;
+      font-size: 13px;
+      margin-bottom: 0;
+    }
+    .right-col {
+      max-height: 60vh;
+      width: min(200px, 30vw);
+    }
+    .dots { bottom: 8px; }
+  }
+
 </style>
 </head>
 <body>
@@ -555,6 +605,7 @@ body { cursor: none; }
     <a href="#" class="contact" id="nav-contact">CONTACT</a>
   </nav>
 
+ 
  
 
   <!-- 數字 -->
@@ -726,10 +777,12 @@ navLinkEls.forEach(a => {
   });
 });
 const cursor = document.getElementById('cursor');
-document.addEventListener('mousemove', (e) => {
-  cursor.style.left = e.clientX + 'px';
-  cursor.style.top  = e.clientY + 'px';
-});
+if (cursor) {
+  document.addEventListener('mousemove', (e) => {
+    cursor.style.left = e.clientX + 'px';
+    cursor.style.top  = e.clientY + 'px';
+  });
+}
 </script>
 </body>
 </html>

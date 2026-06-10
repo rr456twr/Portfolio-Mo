@@ -191,7 +191,7 @@ body::after {
 /* ── NAV ── */
 #nav {
   position: fixed;
-  top: 40px; left: 0; right: 0;
+  top: 0; left: 0; right: 0;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -303,20 +303,19 @@ body::after {
   position: absolute;
   top: 50%;
   left: clamp(24px, 5vw, 73px);
-  width: 100%;
+  width: calc(100% - clamp(24px, 5vw, 73px) - 16px);
   transform: translateY(-50%);   /* JS 只會改這個，不影響 padding */
   z-index: 10;
   will-change: opacity, transform;
-  max-width: calc(min(871px, 90vw) + 200px);  /* 補回寬度 */
-  padding-left: 200px;                         /* 往右推 300px */
+  max-width: calc(min(871px, 90vw) + 200px);
+  padding-left: clamp(0px, 12vw, 200px);       /* 桌機往右推，手機 0 */
 }
 
 .slogan {
   display: flex;
   flex-direction: column;
   gap: clamp(32px, 3.3vw, 48px);
-
-  width: max-content;
+  width: 100%;
 }
 
 .slogan .line {
@@ -330,6 +329,8 @@ body::after {
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
+  white-space: nowrap;
+  overflow: visible;
 }
 
 .line-1 {
@@ -522,9 +523,7 @@ body::after {
   }
 }
 
-/* slogan 在平板上 width: max-content 會溢出 */
-.slogan { width: 100%; margin-left: 0; }
-
+/* slogan 寬度確保不溢出 */
 /* bio 靠右對齊在手機上不適合 */
 .am-bio { align-items: flex-start; }
 
@@ -663,17 +662,17 @@ body::after {
   #hero-text {
     left: 16px;
     max-width: calc(100vw - 32px);
+    padding-left: 0;
   }
 
   .slogan {
-    margin-left: 300px;
     gap: clamp(16px, 4vw, 28px);
   }
 
   .slogan .line {
     font-size: clamp(22px, 7.5vw, 42px);
-    white-space: normal;
-    word-break: break-word;
+    white-space: nowrap;
+    overflow: visible;
   }
 
   #hero-text .zh {
@@ -951,7 +950,9 @@ body::after {
   opacity: 0;
   will-change: opacity;
   pointer-events: none;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
   background:
   linear-gradient(
     to bottom,
@@ -1157,7 +1158,9 @@ img[src="./pic/BK.png"] {
   opacity: 0;
   will-change: opacity;
   pointer-events: none;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
   background: #f1f2f4;
 }
 
@@ -1515,16 +1518,14 @@ img[src="./pic/BK.png"] {
   }
 
   .slogan {
-    margin-left: 300px;
     gap: clamp(14px, 4vw, 24px);
     width: 100%;
   }
 
   .slogan .line {
     font-size: clamp(24px, 7.8vw, 44px);
-    white-space: normal;
-    word-break: break-word;
-    width: 100%;
+    white-space: nowrap;
+    overflow: visible;
   }
 
   #hero-text .zh { margin-left: 0; }
@@ -1596,7 +1597,12 @@ img[src="./pic/BK.png"] {
 
 /* ── Tiny phone (≤ 375px) ── */
 @media (max-width: 375px) {
-  .slogan .line { font-size: clamp(20px, 6.8vw, 30px); }
+  .slogan .line { 
+    font-size: clamp(18px, 6.2vw, 26px);
+    white-space: normal;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+  }
 
   .exp-year { font-size: 12px; letter-spacing: 0.2em; }
   .exp-role { font-size: 10px; }
@@ -1641,4 +1647,234 @@ img[src="./pic/BK.png"] {
   .sk-header { margin-top: 0; }
   .sk-grid { margin-top: 12px; }
   .am-portrait { margin-top: 0; aspect-ratio: auto; max-height: 140px; }
+}
+
+/* ══════════════════════════════════════════
+   MOBILE — 手機專用修正 (≤ 768px)
+   確保所有 section 在手機上可以正確顯示與捲動
+══════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+
+  /* Hero text — 手機置中且不溢出 */
+  #hero-text {
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: calc(100vw - 48px);
+    max-width: none;
+    padding-left: 0;
+    text-align: left;
+  }
+
+  /* 讓 JS 的 translateY 動畫還能作用 */
+  /* JS sets: heroText.style.transform = `translateY(calc(-50% - ${textP * 18}px))` */
+  /* 所以我們不在這裡覆蓋 transform，改用 left + margin-left */
+  #hero-text {
+    left: 24px;
+    transform: translateY(-50%);
+    width: calc(100vw - 48px);
+    max-width: none;
+    padding-left: 0;
+  }
+
+  .slogan .line {
+    font-size: clamp(28px, 8vw, 48px);
+    white-space: nowrap;
+    overflow: visible;
+    letter-spacing: 0.08em;
+  }
+
+  #hero-text .zh p {
+    letter-spacing: 0.3em;
+  }
+
+  /* Experience section 手機捲動 */
+  #experience-content {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 70px 20px 40px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .exp-left {
+    flex: none;
+    width: 100%;
+  }
+
+  .exp-right {
+    width: 100%;
+  }
+
+  .exp-grid {
+    margin-left: 0;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .exp-card--offset {
+    margin-top: 0;
+  }
+
+  .exp-big-title {
+    font-size: clamp(32px, 8vw, 52px);
+    white-space: normal;
+    letter-spacing: 0.25em;
+    margin-left: 0 !important;
+  }
+
+  .exp-big-rule,
+  .exp-current {
+    margin-left: 0 !important;
+  }
+
+  /* About Me section 手機捲動 */
+  #about-content {
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 70px 20px 40px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .am-wrap {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto auto;
+    row-gap: 20px;
+    align-items: start;
+  }
+
+  .am-title {
+    grid-column: 1;
+    grid-row: 1;
+    font-size: clamp(2rem, 9vw, 3rem);
+    letter-spacing: 0.35em;
+    white-space: normal;
+    margin-left: 0 !important;
+  }
+
+  .am-rule {
+    grid-column: 1;
+    grid-row: 2;
+    margin-left: 0 !important;
+  }
+
+  .am-right {
+    grid-column: 1;
+    grid-row: 3;
+  }
+
+  .am-left {
+    grid-column: 1;
+    grid-row: 4;
+    align-items: center;
+    margin-left: 0 !important;
+  }
+
+  .am-bio {
+    align-items: flex-start;
+  }
+
+  .am-bio p {
+    text-align: left;
+    transform: none !important;
+    font-size: clamp(0.75rem, 3.5vw, 0.9rem);
+    letter-spacing: 0.15em;
+  }
+
+  .am-gallery {
+    width: 100%;
+    transform: none !important;
+  }
+
+  .am-portrait {
+    width: min(100%, 320px);
+    margin-top: 0;
+  }
+
+  .am-caption {
+    width: min(100%, 320px);
+    text-align: center;
+    font-size: 0.72rem !important;
+  }
+
+  /* Skills section 手機捲動 */
+  #skills-content {
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 70px 20px 40px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .sk-wrap {
+    width: 100%;
+    padding-top: 0;
+  }
+
+  .sk-header {
+    margin-top: 0;
+  }
+
+  .sk-big-title {
+    font-size: clamp(32px, 8vw, 52px);
+    white-space: normal;
+    letter-spacing: 0.28em;
+  }
+
+  .sk-grid {
+    margin-top: 20px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .sk-card--wide {
+    grid-column: span 2;
+  }
+
+  .sk-card-wrap {
+    height: clamp(130px, 22vw, 170px);
+    cursor: auto;
+  }
+
+  /* Portal 縮小一點 */
+  #portal {
+    width: 160px;
+    height: 160px;
+  }
+}
+
+/* ── 超小手機 (≤ 390px) ── */
+@media (max-width: 390px) {
+  #hero-text {
+    left: 16px;
+    width: calc(100vw - 32px);
+  }
+
+  .slogan .line {
+    font-size: clamp(22px, 7vw, 32px);
+    white-space: normal;
+    word-break: keep-all;
+    letter-spacing: 0.06em;
+  }
+
+  .exp-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sk-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sk-card--wide {
+    grid-column: span 1;
+  }
+
+  .sk-card-wrap {
+    height: 140px;
+  }
 }

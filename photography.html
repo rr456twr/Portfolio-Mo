@@ -11,6 +11,10 @@
 <style>
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 html, body { width:100%; height:100%; overflow:hidden; }
+/* iOS Safari: 支援動態 viewport 高度 */
+@supports (height: 100dvh) {
+  html, body { height: 100dvh; }
+}
 :root { --font-menu: 'Amarna Light', 'Nirmala UI', sans-serif; }
 
 body {
@@ -57,7 +61,7 @@ body::before {
 /* ════════ NAV ════════ */
 #nav {
   position: fixed;
-  top: 40px; left: 0; right: 0;
+  top: 0; left: 0; right: 0;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -230,7 +234,8 @@ body::before {
 /* ── scroll hint ── */
 #scroll-hint {
   position: fixed;
-  bottom: 36px; left: 50%;
+  bottom: max(36px, env(safe-area-inset-bottom, 20px) + 20px);
+  left: 50%;
   transform: translateX(-50%);
   z-index: 160;
   display: flex; flex-direction: column;
@@ -312,7 +317,7 @@ body::before {
     box-shadow: 0 16px 64px rgba(0,0,0,0.20);
   }
   /* scroll hint 位置 */
-  #scroll-hint { bottom: 20px; }
+  #scroll-hint { bottom: max(20px, env(safe-area-inset-bottom, 0px) + 12px); }
   /* progress bar 細一點 */
   #progress-bar { width: 1.5px; }
 }
@@ -550,11 +555,13 @@ viewport.addEventListener('mousedown', e => {
   dragStartY = e.clientY;
   dragStartCamY = targetY;
   viewport.classList.add('grabbing');
-  cursor.classList.add('grabbing');
+  if (cursor) cursor.classList.add('grabbing');
 });
 window.addEventListener('mousemove', e => {
-  cursor.style.left = e.clientX + 'px';
-  cursor.style.top  = e.clientY + 'px';
+  if (cursor) {
+    cursor.style.left = e.clientX + 'px';
+    cursor.style.top  = e.clientY + 'px';
+  }
   if (!isDragging) return;
   const dy = e.clientY - dragStartY;
   if (Math.abs(dy) > 3) hasMoved = true;
@@ -563,7 +570,7 @@ window.addEventListener('mousemove', e => {
 window.addEventListener('mouseup', () => {
   isDragging = false;
   viewport.classList.remove('grabbing');
-  cursor.classList.remove('grabbing');
+  if (cursor) cursor.classList.remove('grabbing');
 });
 
 // 觸控拖曳

@@ -28,7 +28,7 @@
     overflow: hidden;
     cursor: grab;
     user-select: none;
-    touch-action: pan-y;
+    touch-action: none;
   }
 
   #stage.dragging { cursor: grabbing; }
@@ -124,7 +124,7 @@
   /* ════════ NAV ════════ */
   #nav {
     position: fixed;
-    top: 40px; left: 0; right: 0;
+    top: 0; left: 0; right: 0;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -274,14 +274,65 @@
       margin-top: 20px;
       align-self: flex-start;
     }
-    #dots { bottom: 20px; gap: 6px; }
+    #dots { bottom: 24px; gap: 6px; }
     .dot  { width: 4px; height: 4px; }
-    #hint { font-size: 10px; bottom: 10px; }
-    #stage { touch-action: pan-y; }
+    #hint { font-size: 10px; bottom: 8px; }
   }
+  /* ── 手機專用補強 (≤ 768px) ── */
+  @media (max-width: 768px) {
+
+    /* 禁用 custom cursor（觸控裝置不需要） */
+    body { cursor: auto; }
+
+    /* 整個 stage 用 dvh 避免 iOS Safari 網址列高度問題 */
+    body,
+    #stage {
+      height: 100dvh;
+    }
+
+    /* Nav backdrop 讓 logo/burger 在深色背景上看得清楚 */
+    #nav {
+      background: rgba(8, 8, 8, 0.6);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    /* Dots 往上移，避免被系統手勢條遮住 */
+    #dots {
+      bottom: max(28px, env(safe-area-inset-bottom, 20px) + 14px);
+    }
+
+    #hint {
+      bottom: max(12px, env(safe-area-inset-bottom, 8px) + 4px);
+      white-space: nowrap;
+    }
+  }
+
+  /* ── 支援 iPhone notch / Dynamic Island (safe-area) ── */
+  @supports (padding-bottom: env(safe-area-inset-bottom)) {
+    @media (max-width: 768px) {
+      #dots {
+        bottom: calc(env(safe-area-inset-bottom) + 20px);
+      }
+    }
+  }
+
+  /* ── 橫置手機 ── */
+  @media (max-height: 500px) and (orientation: landscape) {
+    #dots { bottom: 12px; }
+    #hint { bottom: 2px; font-size: 9px; }
+  }
+
 </style>
 </head>
 <body>
+
+
+   <!-- Background image with opacity -->
+<div style="position:fixed;inset:0;z-index:0;pointer-events:none;">
+  <img src="./pic/bk-6.png" alt="Background" style="width:100%;height:100%;object-fit:cover;opacity:0.7;">
+</div>
+
 
 <!-- NAV -->
 <nav id="nav">
@@ -388,11 +439,13 @@
     const H = window.innerHeight;
     const isMobile = W < 769;
     const isTablet = W >= 769 && W < 1025;
+    // 手機上考慮 nav 高度（約 56px），留更多空間給卡片
+    const usableH = isMobile ? H - 70 : H;
     return {
-      MAX_FRONT_W: isMobile ? Math.min(W * 0.72, 360) : isTablet ? Math.min(W * 0.52, 560) : 720,
-      MAX_FRONT_H: isMobile ? Math.min(H * 0.52, 400) : isTablet ? Math.min(H * 0.55, 480) : 540,
-      ARC_X:       isMobile ? 0.52 : isTablet ? 0.62 : 0.7,
-      DRAG_SENS:   isMobile ? 0.10 : 0.14,
+      MAX_FRONT_W: isMobile ? Math.min(W * 0.80, 380) : isTablet ? Math.min(W * 0.52, 560) : 720,
+      MAX_FRONT_H: isMobile ? Math.min(usableH * 0.58, 440) : isTablet ? Math.min(H * 0.55, 480) : 540,
+      ARC_X:       isMobile ? 0.50 : isTablet ? 0.62 : 0.7,
+      DRAG_SENS:   isMobile ? 0.12 : 0.14,
     };
   }
   const N = posters.length;
@@ -576,7 +629,9 @@
     prevY     = lastY;
     lastY     = e.touches[0].clientX;
     hasMoved  = true;
-  }, { passive: true });
+    // 水平拖曳時防止頁面捲動
+    if (Math.abs(dx) > 3) e.preventDefault();
+  }, { passive: false });
 
   stage.addEventListener('touchend', () => {
     isDrag = false;

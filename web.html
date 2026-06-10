@@ -80,7 +80,7 @@ body::before {
   
   #nav {
     position: fixed;
-    top: 40px; left: 0; right: 0;
+    top: 0; left: 0; right: 0;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -216,9 +216,9 @@ body::before {
 
   /* ════════ GRID 容器：置中 + 限制最大寬度 ════════ */
   .grid-wrap {
-    max-width: 1080px;        /* ← 卡片區塊最大寬度，改這裡控制兩側空白 */
+    max-width: 1080px;
     margin: 0 auto;
-    padding: 250px 24px 80px;
+    padding: clamp(100px, 16vw, 250px) 24px 80px;
   }
 
   .grid {
@@ -325,6 +325,12 @@ body::before {
 
   .card-link svg { width: 16px; height: 16px; fill: #fff; }
 
+  /* ── Tablet (769px – 1024px) ── */
+  @media (min-width: 769px) and (max-width: 1024px) {
+    :root { --gap: 40px; }
+    .grid-wrap { padding-left: 20px; padding-right: 20px; }
+  }
+
   @media (max-width: 768px) {
     :root { --cols: 1; --gap: 32px; }
     #nav {
@@ -430,7 +436,8 @@ body::before {
 /* ══════════════════════════════
    粒子背景
 ══════════════════════════════ */
-const PARTICLE_COUNT = 12000;
+const isMobile = window.innerWidth < 769;
+const PARTICLE_COUNT = isMobile ? 3000 : 12000;
 const RADIUS = 200;
 
 const scene = new THREE.Scene();
@@ -653,10 +660,12 @@ navDrawer.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMe
 
 /* ── Custom cursor ── */
 const cursor = document.getElementById('cursor');
-document.addEventListener('mousemove', (e) => {
-  cursor.style.left = e.clientX + 'px';
-  cursor.style.top  = e.clientY + 'px';
-});
+if (cursor) {
+  document.addEventListener('mousemove', (e) => {
+    cursor.style.left = e.clientX + 'px';
+    cursor.style.top  = e.clientY + 'px';
+  });
+}
 
 /* ── Nav active (click-based) ── */
 const navLinkEls = Array.from(document.querySelectorAll('#nav a')).filter(a => !a.classList.contains('contact'));

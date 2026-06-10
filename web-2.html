@@ -24,7 +24,7 @@
     /* ════════ NAV ════════ */
     #nav {
       position: fixed;
-      top: 40px; left: 0; right: 0;
+      top: 0; left: 0; right: 0;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -168,12 +168,12 @@
 
     /* ════════ CONTENT ════════ */
     .pic-wrap {
-      padding-top: 300px; /* nav 高度留空 */
+      padding-top: clamp(100px, 14vw, 220px);
       display: flex;
       flex-direction: column;
       gap: 48px;
-      padding-left: 400px;
-      padding-right: 400px;
+      padding-left: clamp(24px, 20vw, 400px);
+      padding-right: clamp(24px, 20vw, 400px);
       padding-bottom: 80px;
     }
 
@@ -184,24 +184,16 @@
       border-radius: 4px;
     }
 
-    @media (max-width: 768px) {
-      .pic-wrap {
-        padding-top: 80px;
-        padding-left: 24px;
-        padding-right: 24px;
-        gap: 32px;
-      }
-    }
-
     @media (max-width: 480px) {
-      .pic-wrap {
-        padding-left: 16px;
-        padding-right: 16px;
-        gap: 24px;
-      }
+      .pic-wrap { gap: 20px; }
     }
 
-  body { cursor: none; }
+  @media (hover: hover) and (pointer: fine) {
+    body { cursor: none; }
+  }
+  @media (hover: none), (pointer: coarse) {
+    #cursor { display: none; }
+  }
 
 #cursor {
   position: fixed;
@@ -252,7 +244,7 @@
 
   <!-- 圖片區：左右各空 100px，上下依序排列 -->
  <div class="pic-wrap">
-  <video width="100%" autoplay muted loop playsinline>
+  <video style="width:100%;height:auto;display:block;border-radius:4px;" autoplay muted loop playsinline>
     <source src="./pic/6.mp4" type="video/mp4">
   </video>
 </div>
@@ -290,10 +282,12 @@
       });
     });
   const cursor = document.getElementById('cursor');
-document.addEventListener('mousemove', (e) => {
-  cursor.style.left = e.clientX + 'px';
-  cursor.style.top  = e.clientY + 'px';
-});
+  if (cursor) {
+    document.addEventListener('mousemove', (e) => {
+      cursor.style.left = e.clientX + 'px';
+      cursor.style.top  = e.clientY + 'px';
+    });
+  }
   </script>
 </body>
 </html>
