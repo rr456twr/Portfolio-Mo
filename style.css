@@ -106,7 +106,7 @@ body::after {
   content: "";
   position: absolute;
   inset: 0;
-  background-image: url("./pic/bk-4.png");
+  background-image: url("./pic/bk-4.webp");
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
@@ -961,7 +961,7 @@ body::after {
     rgba(210, 210, 210, 0.5) 69%,
     rgba(255, 255, 255, 0.3) 100%
   ),
-  url('./pic/BK.png') center center / cover no-repeat;
+  url('./pic/BK.webp') center center / cover no-repeat;
  
 }
 
@@ -1168,7 +1168,7 @@ img[src="./pic/BK.png"] {
   content: '';
   position: absolute;
   inset: 0;
-  background: url('./pic/bk-4.png') center center / cover no-repeat;
+  background: url('./pic/bk-4.webp') center center / cover no-repeat;
   opacity: 0.85;
   mix-blend-mode: multiply;
   pointer-events: none;
