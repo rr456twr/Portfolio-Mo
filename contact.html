@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact — MO</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Noto+Sans+TC:wght@300;400;500;700&family=Tenor+Sans&display=swap" rel="stylesheet">
+  <link href="https://fonts.cdnfonts.com/css/broadway" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css">
+  <style>
+    /* ══════════════════════════════════════════
+       CONTACT PAGE — standalone
+    ══════════════════════════════════════════ */
+
+    /* Override body scroll for this standalone page */
+    html, body {
+      height: 100%;
+      overflow: hidden;
+    }
+
+    /* Use the same light background as the skills section */
+    body {
+      background: #f1f2f4;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      body { cursor: none; }
+    }
+    @media (hover: none), (pointer: coarse) {
+      #cursor { display: none; }
+    }
+
+    /* ── Full-page contact scene ── */
+    #contact-scene {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      z-index: 50;
+      background: #f1f2f4;
+    }
+
+    /* Background texture (same bk-4.webp overlay as skills) */
+    #contact-scene::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url('./pic/bk-4.webp') center center / cover no-repeat;
+      opacity: 0.85;
+      mix-blend-mode: multiply;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Cursor ── */
+    #cursor {
+      position: fixed;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 999;
+      top: 0; left: 0;
+      transform: translate(-50%, -50%);
+      transition: background 0.4s ease, border-color 0.4s ease, transform 0.12s ease;
+      background: rgba(44, 44, 44, 0.06);
+      border: 1.5px solid rgba(44, 44, 44, 0.70);
+    }
+    #cursor::after {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: rgb(44, 44, 44);
+    }
+
+    /* ── NAV — reuse styles from style.css, override color for light page ── */
+    #nav {
+      --nav-fg: rgb(35, 35, 35);
+    }
+
+    /* ── CONTACT CONTENT ── */
+    #contact-content {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: clamp(80px, 10vh, 120px) clamp(40px, 6vw, 100px) clamp(40px, 6vh, 80px);
+      z-index: 1;
+    }
+
+    .ct-wrap {
+      width: 100%;
+      max-width: 1100px;
+      display: flex;
+      flex-direction: column;
+      gap: clamp(24px, 3vw, 40px);
+    }
+
+    /* ── Header (mirrors .sk-header) ── */
+    .ct-header {
+      margin-top: clamp(-60px, -10vh, -150px);
+      display: flex;
+      align-items: baseline;
+      gap: clamp(20px, 3vw, 48px);
+    }
+
+    .ct-big-title {
+      font-family: var(--font-part);
+      font-weight: 300;
+      font-style: italic;
+      font-size: clamp(36px, 5.2vw, 82px);
+      letter-spacing: 0.38em;
+      color: rgba(40, 38, 35, 0.88);
+      white-space: nowrap;
+      line-height: 1;
+    }
+
+    .ct-big-rule {
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(to right, rgba(0,0,0,0.18), transparent);
+      margin-bottom: 4px;
+    }
+
+    /* ── Subtitle / tagline ── */
+    .ct-subtitle {
+      font-family: var(--font-zh);
+      font-size: clamp(12px, 1.05vw, 15px);
+      letter-spacing: 0.35em;
+      color: rgba(80, 75, 68, 0.75);
+      margin-top: -8px;
+      line-height: 2;
+    }
+
+    /* ── Contact cards ── */
+    .ct-cards {
+      margin-top: clamp(8px, 4vh, 40px);
+      display: flex;
+      flex-direction: column;
+      gap: clamp(10px, 1.4vw, 16px);
+    }
+
+    .ct-card {
+      background: rgba(255, 255, 255, 0.38);
+      border: 0.5px solid rgba(255, 255, 255, 0.70);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      box-shadow:
+        0 4px 24px rgba(0, 0, 0, 0.07),
+        inset 0 1px 0 rgba(255, 255, 255, 0.85);
+      border-radius: 14px;
+      padding: clamp(14px, 1.8vw, 22px) clamp(16px, 2vw, 26px);
+      display: flex;
+      align-items: center;
+      gap: clamp(14px, 1.6vw, 20px);
+      text-decoration: none;
+      transition: border-color 0.3s ease, background 0.3s ease, transform 0.3s ease;
+      cursor: none;
+    }
+
+    .ct-card:hover {
+      border-color: rgba(255, 255, 255, 0.90);
+      background: rgba(255, 255, 255, 0.55);
+      transform: translateX(6px);
+    }
+
+    .ct-icon {
+      width: clamp(32px, 3vw, 42px);
+      height: clamp(32px, 3vw, 42px);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-menu);
+      font-size: clamp(10px, 1vw, 14px);
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      flex-shrink: 0;
+    }
+
+    .ct-icon--mail  { background: #1a1218; color: #ddd; }
+    .ct-icon--gh    { background: #161b22; color: #fff; }
+    .ct-icon--ln    { background: #003555; color: #0a66c2; }
+
+    .ct-card-text {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      min-width: 0;
+    }
+
+    .ct-card-label {
+      font-family: var(--font-menu);
+      font-size: clamp(7px, 0.65vw, 9px);
+      letter-spacing: 0.22em;
+      color: rgba(100, 95, 88, 0.75);
+      text-transform: uppercase;
+    }
+
+    .ct-card-value {
+      font-family: var(--font-zh);
+      font-size: clamp(11px, 1vw, 14px);
+      letter-spacing: 0.15em;
+      color: rgba(30, 28, 25, 0.88);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .ct-arr {
+      margin-left: auto;
+      font-size: clamp(11px, 1vw, 14px);
+      color: rgba(100, 95, 88, 0.45);
+      flex-shrink: 0;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 860px) {
+      .ct-header { margin-top: 0; }
+    }
+
+    @media (max-width: 768px) {
+      #nav { top: 0 !important; }
+
+      #contact-content {
+        padding: 80px 20px 40px;
+        overflow-y: auto;
+        align-items: flex-start;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .ct-big-title {
+        font-size: clamp(32px, 8vw, 52px);
+        white-space: normal;
+        letter-spacing: 0.28em;
+      }
+
+      .ct-grid { margin-top: 12px; }
+    }
+
+    /* 桌機：nav top:40px，content padding-top 補足 */
+    @media (min-width: 769px) {
+      #contact-content {
+        padding-top: clamp(100px, 14vh, 140px);
+      }
+    }
+
+    @media (max-width: 480px) {
+      .ct-card-value { font-size: 11px; }
+    }
+
+    /* Noise texture (same as main site) */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      background-size: 256px 256px;
+      pointer-events: none;
+      z-index: 100;
+      opacity: 0.4;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="cursor"></div>
+
+  <div id="contact-scene">
+
+    <!-- NAV (identical structure to index.html) -->
+    <nav id="nav">
+      <button class="nav-hamburger" id="nav-hamburger" aria-label="開啟選單" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="nav-overlay" id="nav-overlay"></div>
+      <div class="nav-links" id="nav-links">
+        <a href="./index.html">HOME</a>
+        <a href="./ui.html">MOBILE</a>
+        <a href="./web.html">WEB</a>
+        <a href="./ill.html">ILLUSTRATION</a>
+        <a href="./photography.html">PHOTOGRAPHY</a>
+      </div>
+      <a href="./contact.html" class="contact nav-active" id="nav-contact">CONTACT</a>
+    </nav>
+
+    <!-- CONTACT CONTENT -->
+    <div id="contact-content">
+      <div class="ct-wrap">
+
+        <!-- Header -->
+        <div class="ct-header">
+          <h2 class="ct-big-title">CONTACT ME</h2>
+          <div class="ct-big-rule"></div>
+        </div>
+
+        <!-- Subtitle — 請自行替換為你想要的文字 -->
+        <p class="ct-subtitle">
+          歡迎透過以下方式與我聯繫，無論是合作提案、設計諮詢，或只是想打聲招呼。
+        </p>
+
+        <!-- Contact cards -->
+        <div class="ct-cards">
+
+            <a href="mailto:qazwsx5961728@email.com" class="ct-card">
+              <div class="ct-icon ct-icon--mail">✉</div>
+              <div class="ct-card-text">
+                <span class="ct-card-label">Email</span>
+                <span class="ct-card-value">qazwsx5961728@gmail.com</span>
+              </div>
+              <span class="ct-arr">→</span>
+            </a>
+
+
+            <a href="https://linkedin.com/" target="_blank" rel="noopener" class="ct-card">
+              <div class="ct-icon ct-icon--ln">in</div>
+              <div class="ct-card-text">
+                <span class="ct-card-label">LinkedIn</span>
+                <span class="ct-card-value">linkedin.com/in/yourname</span>
+              </div>
+              <span class="ct-arr">→</span>
+            </a>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // ── Cursor ──────────────────────────────────────
+    const cursor = document.getElementById('cursor');
+    if (cursor) {
+      document.addEventListener('mousemove', (e) => {
+        cursor.style.left = e.clientX + 'px';
+        cursor.style.top  = e.clientY + 'px';
+      });
+    }
+
+    // ── Hamburger menu ──────────────────────────────
+    const hamburger  = document.getElementById('nav-hamburger');
+    const navDrawer  = document.getElementById('nav-links');
+    const navOverlay = document.getElementById('nav-overlay');
+
+    function openMenu() {
+      hamburger.classList.add('is-open');
+      navDrawer.classList.add('is-open');
+      navOverlay.classList.add('is-open');
+      hamburger.setAttribute('aria-expanded', 'true');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeMenu() {
+      hamburger.classList.remove('is-open');
+      navDrawer.classList.remove('is-open');
+      navOverlay.classList.remove('is-open');
+      hamburger.setAttribute('aria-expanded', 'false');
+      document.body.style.overflow = '';
+    }
+
+    hamburger.addEventListener('click', () => {
+      hamburger.classList.contains('is-open') ? closeMenu() : openMenu();
+    });
+    navOverlay.addEventListener('click', closeMenu);
+    navDrawer.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMenu));
+
+    // ── Nav active link ─────────────────────────────
+    const navLinks = Array.from(document.querySelectorAll('#nav a')).filter(a => !a.classList.contains('contact'));
+    navLinks.forEach(a => {
+      a.addEventListener('click', () => {
+        navLinks.forEach(l => l.classList.remove('nav-active'));
+        a.classList.add('nav-active');
+      });
+    });
+
+    // ── Nav hamburger colour (light page = dark bars) ──
+    hamburger.querySelectorAll('span').forEach(s => { s.style.background = 'rgb(35,35,35)'; });
+  </script>
+</body>
+</html>
