@@ -1312,7 +1312,7 @@ img[src="./pic/BK.png"] {
 .sk-ib--ai   { background: #1a0a00; color: #ff9a00; }
 .sk-ib--ae   { background: #0a0018; color: #9999ff; }
 .sk-ib--dv {
-  background: #000 url('./pic/DaVinci_Resolve_Studio.png') center / cover no-repeat;
+  background: #000 url('./pic/DaVinci_Resolve_Studio.webp') center / cover no-repeat;
   color: transparent;
   font-size: 0;
   border: none;
@@ -1320,7 +1320,7 @@ img[src="./pic/BK.png"] {
 .sk-ib--css  { background: #001a22; color: #264de4; font-size: clamp(8px, 0.75vw, 10px); letter-spacing: 0; }
 /* Procreate — brush-stroke icon */
 .sk-ib--pr {
-  background: #1a1a1a url('./pic/procreate-icon.png') center / cover no-repeat;
+  background: #1a1a1a url('./pic/procreate-icon.webp') center / cover no-repeat;
   color: transparent;
   font-size: 0;
   border: none;
@@ -1332,7 +1332,7 @@ img[src="./pic/BK.png"] {
   width: clamp(28px, 2.8vw, 36px);
   height: clamp(28px, 2.8vw, 36px);
   border-radius: 8px;
-  background: #f0f0f0 url('./pic/image.png') center / cover no-repeat;
+  background: #f0f0f0 url('./pic/image.webp') center / cover no-repeat;
   color: transparent;
   font-size: 0;
   border: none;
