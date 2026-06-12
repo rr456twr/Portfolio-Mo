@@ -1,19 +1,20 @@
-const expBgLayer = document.getElementById('exp-bg-layer');
-const skillsContent   = document.getElementById('skills-content');
-const cursor          = document.getElementById('cursor');
-const portal          = document.getElementById('portal');
-const heroText        = document.getElementById('hero-text');
-const pageBg          = document.getElementById('page-bg');
-const darkBg          = document.getElementById('dark-bg');
-const gridLines       = document.getElementById('grid-lines');
-const darkContent     = document.getElementById('dark-content');
-const expContent      = document.getElementById('experience-content');
-const aboutContent    = document.getElementById('about-content');
-const scrollHint      = document.getElementById('scroll-hint');
-const nav             = document.getElementById('nav');
-const navLinks        = document.querySelectorAll('#nav a');
-const navContact      = document.getElementById('nav-contact');
-const scrollSpacer    = document.getElementById('scroll-spacer');
+// ── DOM refs ────────────────────────────────────────────
+const expBgLayer  = document.getElementById('exp-bg-layer');
+const skillsContent = document.getElementById('skills-content');
+const cursor      = document.getElementById('cursor');
+const portal      = document.getElementById('portal');
+const heroText    = document.getElementById('hero-text');
+const pageBg      = document.getElementById('page-bg');
+const darkBg      = document.getElementById('dark-bg');
+const gridLines   = document.getElementById('grid-lines');
+const darkContent = document.getElementById('dark-content');
+const expContent  = document.getElementById('experience-content');
+const aboutContent = document.getElementById('about-content');
+const scrollHint  = document.getElementById('scroll-hint');
+const nav         = document.getElementById('nav');
+const navLinks    = document.querySelectorAll('#nav a');
+const navContact  = document.getElementById('nav-contact');
+const scrollSpacer = document.getElementById('scroll-spacer');
 
 // ── Hamburger menu ──────────────────────────────────────
 const hamburger  = document.getElementById('nav-hamburger');
@@ -39,10 +40,7 @@ function closeMenu() {
 hamburger.addEventListener('click', () => {
   hamburger.classList.contains('is-open') ? closeMenu() : openMenu();
 });
-
 navOverlay.addEventListener('click', closeMenu);
-
-// Close on any nav link tap
 navDrawer.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMenu));
 
 // ── Nav active link (click-based) ───────────────────────
@@ -50,42 +48,35 @@ const navLinkEls = Array.from(navLinks).filter(a => !a.classList.contains('conta
 
 navLinkEls.forEach(a => {
   a.addEventListener('click', (e) => {
-    // Mark clicked link as active, clear others
     navLinkEls.forEach(l => l.classList.remove('nav-active'));
     a.classList.add('nav-active');
-    // href="#" — prevent jump
     if (a.getAttribute('href') === '#') e.preventDefault();
   });
 });
 
-// Set HOME active on load
 const homeLink = navLinkEls.find(a => a.textContent.trim().toUpperCase() === 'HOME');
 if (homeLink) homeLink.classList.add('nav-active');
 
 // ── Touch card flip ──────────────────────────────────────
 document.querySelectorAll('.sk-card-wrap').forEach(card => {
   card.addEventListener('click', () => {
-    // Only apply on touch/coarse pointer devices
     if (window.matchMedia('(hover: none) and (pointer: coarse)').matches) {
       card.classList.toggle('flipped');
     }
   });
 });
 
-// Clear any stale inline colors so CSS --nav-fg variable takes over
 navLinks.forEach((a) => { a.style.color = ''; });
 
-// Keep hamburger bar colour in sync with nav-fg
 function syncHamburger(c) {
-  hamburger.querySelectorAll('span').forEach(s => { s.style.background = `rgb(${c},${c},${c})`; });
+  hamburger.querySelectorAll('span').forEach(s => {
+    s.style.background = `rgb(${c},${c},${c})`;
+  });
 }
 
+// ── Constants ───────────────────────────────────────────
 const R = 110;
-
-// Phase 1: intro portal + dark-bg animation  (was 2.4 → now 1.3×)
-const TOTAL_BASE = () => innerHeight * 0.5;
-// Extended to 7.0× — gives Skills section enough room after About Me
-const TOTAL_EXT  = () => innerHeight * 7.0;
+const TOTAL_BASE = () => innerHeight * 0.5;  // portal intro length
 
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 const remap = (v, a, b, c, d) => c + clamp((v - a) / (b - a), 0, 1) * (d - c);
@@ -97,15 +88,195 @@ function maxScale() {
   return (d / R) * 1.05;
 }
 
+// ── Scroll spacer: just enough to run portal intro ──────
 function updateScrollHeight() {
-  scrollSpacer.style.height = (TOTAL_EXT() + innerHeight) + 'px';
+  scrollSpacer.style.height = (TOTAL_BASE() + innerHeight) + 'px';
 }
 
-document.addEventListener('mousemove', (e) => {
-  cursor.style.left = e.clientX + 'px';
-  cursor.style.top  = e.clientY + 'px';
+// ── Section definitions ──────────────────────────────────
+// index 0 = Hero (the dark-content divider stage after portal)
+// index 1 = Experience
+// index 2 = About Me
+// index 3 = Skills
+const SECTIONS = [
+  { el: darkContent,  name: 'HOME'       },
+  { el: expContent,   name: 'EXPERIENCE' },
+  { el: aboutContent, name: 'ABOUT'      },
+  { el: skillsContent, name: 'SKILLS'   },
+];
+
+const CROSSFADE_MS = 680;  // duration of crossfade transition
+
+let snapMode    = false;   // true once portal animation completes
+let currentIdx  = 0;       // active section index (0 = Hero dark)
+let isAnimating = false;   // lock during crossfade
+
+// ── Apply opacity to all sections directly ───────────────
+function setSectionOpacity(idx, op, pointer) {
+  const s = SECTIONS[idx];
+  if (!s) return;
+  s.el.style.opacity       = op;
+  s.el.style.pointerEvents = pointer ? 'auto' : 'none';
+  // exp-bg-layer follows experience section
+  if (idx === 1) expBgLayer.style.opacity = op;
+}
+
+// Set initial states
+SECTIONS.forEach((_, i) => setSectionOpacity(i, 0, false));
+
+// ── Crossfade to a target section ────────────────────────
+function goToSection(targetIdx, direction) {
+  if (isAnimating) return;
+  if (targetIdx < 0 || targetIdx >= SECTIONS.length) return;
+  if (targetIdx === currentIdx) return;
+
+  isAnimating = true;
+
+  const prev = currentIdx;
+  currentIdx = targetIdx;
+
+  // Update nav active link
+  const targetName = SECTIONS[targetIdx].name;
+  navLinkEls.forEach(a => {
+    const text = a.textContent.trim().toUpperCase();
+    if (text === targetName || (targetName === 'HOME' && text === 'HOME')) {
+      a.classList.add('nav-active');
+    } else {
+      a.classList.remove('nav-active');
+    }
+  });
+
+  // Crossfade: fade out prev, fade in next simultaneously
+  const prevEl    = SECTIONS[prev].el;
+  const targetEl  = SECTIONS[targetIdx].el;
+
+  // Prepare target: make it visible but transparent, no pointer events yet
+  targetEl.style.transition  = `opacity ${CROSSFADE_MS}ms cubic-bezier(0.4,0,0.2,1)`;
+  prevEl.style.transition    = `opacity ${CROSSFADE_MS}ms cubic-bezier(0.4,0,0.2,1)`;
+  if (prev === 1) expBgLayer.style.transition = `opacity ${CROSSFADE_MS}ms cubic-bezier(0.4,0,0.2,1)`;
+
+  targetEl.style.opacity     = 0;
+  targetEl.style.pointerEvents = 'none';
+
+  // Force reflow
+  void targetEl.offsetWidth;
+
+  // Trigger fade
+  prevEl.style.opacity    = 0;
+  targetEl.style.opacity  = 1;
+  if (prev === 1) expBgLayer.style.opacity = 0;
+
+  // Update nav & bg style for new section
+  updateNavForSection(targetIdx);
+
+  setTimeout(() => {
+    prevEl.style.pointerEvents    = 'none';
+    targetEl.style.pointerEvents  = 'auto';
+    // Clear transitions so JS tick can take over if needed
+    prevEl.style.transition       = '';
+    targetEl.style.transition     = '';
+    if (prev === 1) expBgLayer.style.transition = '';
+    isAnimating = false;
+  }, CROSSFADE_MS);
+}
+
+// ── Nav / bg style per section ────────────────────────────
+function updateNavForSection(idx) {
+  // 0 = dark stage, 1 = experience (dark), 2 = about (dark), 3 = skills (light)
+  const isLight = (idx === 3);
+  const navC = isLight ? 35 : 255;
+
+  nav.style.setProperty('--nav-fg', `rgb(${navC},${navC},${navC})`);
+  syncHamburger(navC);
+
+  if (isLight) {
+    nav.classList.remove('nav-dark-mode');
+    nav.style.background = 'rgba(249,248,246,0.25)';
+    cursor.style.background  = 'rgba(44,44,44,0.06)';
+    cursor.style.borderColor = 'rgba(44,44,44,0.70)';
+  } else {
+    nav.classList.add('nav-dark-mode');
+    nav.style.background = 'rgba(10,10,15,0.25)';
+    cursor.style.background  = 'rgba(200,195,185,0.08)';
+    cursor.style.borderColor = 'rgba(200,195,185,0.75)';
+  }
+}
+
+// ── Wheel / keyboard / touch input ───────────────────────
+let wheelAccum  = 0;
+const WHEEL_THRESHOLD = 80;
+
+let touchStartY = 0;
+const TOUCH_THRESHOLD = 50;
+
+function handleNext() { goToSection(currentIdx + 1); }
+function handlePrev() { goToSection(currentIdx - 1); }
+
+window.addEventListener('wheel', (e) => {
+  if (!snapMode) return;
+
+  // If current section has internal scroll (mobile overflow-y), let it scroll
+  const el = SECTIONS[currentIdx].el;
+  const scrollable = el.scrollHeight > el.clientHeight + 2;
+  if (scrollable) {
+    const atTop    = el.scrollTop <= 0;
+    const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 2;
+    if (e.deltaY > 0 && !atBottom) return;
+    if (e.deltaY < 0 && !atTop) return;
+  }
+
+  e.preventDefault();
+
+  wheelAccum += e.deltaY;
+  if (Math.abs(wheelAccum) >= WHEEL_THRESHOLD) {
+    wheelAccum > 0 ? handleNext() : handlePrev();
+    wheelAccum = 0;
+  }
+}, { passive: false });
+
+window.addEventListener('touchstart', (e) => {
+  if (!snapMode) return;
+  touchStartY = e.touches[0].clientY;
+}, { passive: true });
+
+window.addEventListener('touchend', (e) => {
+  if (!snapMode) return;
+  const dy = touchStartY - e.changedTouches[0].clientY;
+
+  // Allow internal scroll in overflowing sections
+  const el = SECTIONS[currentIdx].el;
+  const scrollable = el.scrollHeight > el.clientHeight + 2;
+  if (scrollable) {
+    const atTop    = el.scrollTop <= 0;
+    const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 2;
+    if (dy > 0 && !atBottom) return;
+    if (dy < 0 && !atTop) return;
+  }
+
+  if (Math.abs(dy) >= TOUCH_THRESHOLD) {
+    dy > 0 ? handleNext() : handlePrev();
+  }
+}, { passive: true });
+
+window.addEventListener('keydown', (e) => {
+  if (!snapMode) return;
+  if (e.key === 'ArrowDown' || e.key === 'PageDown') { e.preventDefault(); handleNext(); }
+  if (e.key === 'ArrowUp'   || e.key === 'PageUp')   { e.preventDefault(); handlePrev(); }
 });
 
+// ── Dot / nav link navigation ─────────────────────────────
+// Allow nav links to jump to sections when snap mode is active
+navLinkEls.forEach(a => {
+  a.addEventListener('click', (e) => {
+    if (!snapMode) return;
+    e.preventDefault();
+    const text = a.textContent.trim().toUpperCase();
+    const idx = SECTIONS.findIndex(s => s.name === text);
+    if (idx !== -1) goToSection(idx);
+  });
+});
+
+// ── Portal intro tick (scroll-driven) ────────────────────
 let raf = false;
 window.addEventListener('scroll', () => {
   if (!raf) { requestAnimationFrame(tick); raf = true; }
@@ -113,17 +284,16 @@ window.addEventListener('scroll', () => {
 
 function tick() {
   raf = false;
-  const sy     = window.scrollY;
-  // p drives the original intro animation (0 → 1 over first 2.4× viewport)
-  const p      = clamp(sy / TOTAL_BASE(), 0, 1);
-  // pX drives the extended section reveals (0 → 1 over full 6× viewport)
-  const pX     = sy / TOTAL_EXT();
+  if (snapMode) return;  // once snap mode is active, scroll tick does nothing
+
+  const sy = window.scrollY;
+  const p  = clamp(sy / TOTAL_BASE(), 0, 1);
 
   /* ── Portal scale ── */
   const scaleP = ease(remap(p, 0, 0.3, 0, 1));
   portal.style.transform = `translate(-50%, -50%) scale(${1 + scaleP * maxScale()})`;
 
-  /* ── Portal colour: holo white → black ── */
+  /* ── Portal colour ── */
   const cP  = remap(p, 0.05, 0.52, 0, 1);
   const sh  = Math.round(255 * (1 - cP));
   const shd = Math.round(sh * 0.88);
@@ -137,7 +307,7 @@ function tick() {
     : 'none';
   portal.style.setProperty('--ring-opacity', String(glowA * 0.6));
 
-  /* ── Hero text: fade + lift ── */
+  /* ── Hero text ── */
   const textP = ease(remap(p, 0, 0.30, 0, 1));
   heroText.style.opacity   = 1 - textP;
   heroText.style.transform = `translateY(calc(-50% - ${textP * 18}px))`;
@@ -145,85 +315,217 @@ function tick() {
   /* ── Scroll hint ── */
   scrollHint.style.opacity = 1 - remap(p, 0, 0.12, 0, 1);
 
-  /* ── Dark background ── */
+  /* ── Dark BG ── */
   const darkP = ease(remap(p, 0.12, 0.68, 0, 1));
   darkBg.style.opacity    = darkP * 0.97;
   pageBg.style.opacity    = 1 - darkP;
   gridLines.style.opacity = remap(darkP, 0.4, 1, 0, 0.7);
   darkBg.style.setProperty('--dark-vortex', String(lerp(0, 1, remap(darkP, 0.12, 1, 0, 1))));
 
-  /* ── Nav colour: original dark → pure white (dark sections)
-     → back to dark when Skills (light bg) fades in               ── */
+  /* ── Nav colour during intro ── */
   const navT = remap(darkP, 0.45, 1, 0, 1);
-  // skillsOp already computed below but we need it here — compute early
-  const _skillsOp = ease(remap(pX, 0.72, 0.80, 0, 1));
-  // lerp: dark(35) → white(255) for dark sections, then white → dark(35) for skills
-  const navCBase = Math.round(lerp(35, 255, navT));
-  const navC     = Math.round(lerp(navCBase, 35, _skillsOp));
+  const navC = Math.round(lerp(35, 255, navT));
   nav.style.setProperty('--nav-fg', `rgb(${navC},${navC},${navC})`);
   syncHamburger(navC);
 
-  /* ── Nav background: 淺色毛玻璃 ↔ 深色毛玻璃 ── */
-  if (darkP > 0.45 && _skillsOp < 0.5) {
+  if (darkP > 0.45) {
     nav.style.background = `rgba(10,10,15,${0.25 * Math.min(1, (darkP - 0.45) / 0.3)})`;
-  } else if (_skillsOp > 0.3) {
-    nav.style.background = `rgba(249,248,246,${0.25 * Math.min(1, _skillsOp / 0.3)})`;
+    nav.classList.add('nav-dark-mode');
+    cursor.style.background  = 'rgba(200,195,185,0.08)';
+    cursor.style.borderColor = 'rgba(200,195,185,0.75)';
   } else {
     nav.style.background = 'rgba(249,248,246,0.25)';
-  }
-
-  // dark-mode class: underline colour follows --nav-fg (white on dark, dark on light)
-  if (darkP > 0.45 && _skillsOp < 0.5) {
-    nav.classList.add('nav-dark-mode');
-  } else {
     nav.classList.remove('nav-dark-mode');
-  }
-
-  /* ── Cursor ── */
-  if (_skillsOp > 0.5 || darkP < 0.6) {
-    // Light background: dark ring
-    cursor.style.background = 'rgba(44,44,44,0.06)';
+    cursor.style.background  = 'rgba(44,44,44,0.06)';
     cursor.style.borderColor = 'rgba(44,44,44,0.70)';
-  } else {
-    // Dark background: light ring
-    cursor.style.background = 'rgba(200,195,185,0.08)';
-    cursor.style.borderColor = 'rgba(200,195,185,0.75)';
   }
 
-  /* ── Dark content (divider)
-     Fades in at end of intro, fades out as Experience comes in.
-     TOTAL_BASE = 1.3× → pX at that point = 1.3/5.0 = 0.26         ── */
-  const dcIn  = ease(remap(p,  0.78, 0.98, 0, 1));
-  const dcOut = ease(remap(pX, 0.22, 0.27, 0, 1));
-  const dcOp  = dcIn * (1 - dcOut);
-  darkContent.style.opacity       = dcOp;
-  darkContent.style.pointerEvents = dcOp > 0.1 ? 'auto' : 'none';
+  /* ── Dark content (Hero section 0) fades in at end of intro ── */
+  const dcIn = ease(remap(p, 0.78, 0.98, 0, 1));
+  darkContent.style.opacity       = dcIn;
+  darkContent.style.pointerEvents = dcIn > 0.1 ? 'auto' : 'none';
 
-  /* ── Experience section
-     pX 0.25 → 0.33 : fade in
-     pX 0.48 → 0.56 : fade out                                       ── */
-  const expIn = ease(remap(pX, 0.07, 0.12, 0, 1));
-  const expOut = ease(remap(pX, 0.48, 0.56, 0, 1));
-  const expOp  = expIn * (1 - expOut);
-  expContent.style.opacity       = expOp;
-  expContent.style.pointerEvents = expOp > 0.1 ? 'auto' : 'none';
-  expBgLayer.style.opacity = expOp;
-
-  /* ── About Me section — crossfade: starts fading IN while
-     Experience is fading out (overlap at pX 0.50–0.56)             ── */
-  const aboutOp = ease(remap(pX, 0.50, 0.58, 0, 1)) * (1 - ease(remap(pX, 0.70, 0.78, 0, 1)));
-  aboutContent.style.opacity       = aboutOp;
-  aboutContent.style.pointerEvents = aboutOp > 0.1 ? 'auto' : 'none';
-
-  /* ── Skills section — fades in after About Me fades out ── */
-  const skillsOp = _skillsOp;
-  skillsContent.style.opacity       = skillsOp;
-  skillsContent.style.pointerEvents = skillsOp > 0.1 ? 'auto' : 'none';
+  /* ── Activate snap mode when portal animation is complete ── */
+  if (p >= 0.99 && !snapMode) {
+    enterSnapMode();
+  }
 }
 
+// ── Enter snap mode ───────────────────────────────────────
+function enterSnapMode() {
+  snapMode = true;
+
+  // Freeze scroll at top so the fixed scene stays fully visible
+  window.scrollTo(0, 0);
+  document.body.style.overflow = 'hidden';
+  scrollSpacer.style.display   = 'none';
+
+  // Ensure portal & bg are in their final intro state
+  portal.style.transform = `translate(-50%, -50%) scale(${1 + maxScale()})`;
+  portal.style.boxShadow = 'none';
+  darkBg.style.opacity   = '0.97';
+  pageBg.style.opacity   = '0';
+  gridLines.style.opacity = '0.7';
+  darkBg.style.setProperty('--dark-vortex', '1');
+  heroText.style.opacity = '0';
+  scrollHint.style.opacity = '0';
+
+  // Show first snap section (index 0 = Hero dark stage)
+  currentIdx = 0;
+  setSectionOpacity(0, 1, true);
+  updateNavForSection(0);
+
+  // Show snap progress dots
+  updateDots();
+}
+
+// ── Cursor ────────────────────────────────────────────────
+document.addEventListener('mousemove', (e) => {
+  cursor.style.left = e.clientX + 'px';
+  cursor.style.top  = e.clientY + 'px';
+});
+
+// ── Dot navigation ───────────────────────────────────────
+let dotsContainer = null;
+
+function buildDots() {
+  dotsContainer = document.createElement('div');
+  dotsContainer.id = 'snap-dots';
+  dotsContainer.style.cssText = `
+    position: fixed;
+    right: 28px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 300;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  `;
+
+  SECTIONS.forEach((s, i) => {
+    const dot = document.createElement('button');
+    dot.setAttribute('aria-label', s.name);
+    dot.dataset.idx = i;
+    dot.style.cssText = `
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(200,195,185,0.7);
+      background: transparent;
+      cursor: pointer;
+      padding: 0;
+      transition: background 0.3s ease, transform 0.3s ease, border-color 0.3s ease;
+    `;
+    dot.addEventListener('click', () => goToSection(i));
+    dotsContainer.appendChild(dot);
+  });
+
+  document.body.appendChild(dotsContainer);
+}
+
+function updateDots() {
+  if (!dotsContainer) buildDots();
+
+  // Show dots
+  dotsContainer.style.opacity = '1';
+
+  const isLight = currentIdx === 3;
+  const dotColor = isLight
+    ? 'rgba(44,44,44,0.7)'
+    : 'rgba(200,195,185,0.7)';
+
+  dotsContainer.querySelectorAll('button').forEach((dot, i) => {
+    const active = i === currentIdx;
+    dot.style.background    = active ? dotColor : 'transparent';
+    dot.style.borderColor   = dotColor;
+    dot.style.transform     = active ? 'scale(1.3)' : 'scale(1)';
+  });
+}
+
+// Patch goToSection to update dots
+const _goToSection = goToSection;
+window.goToSection = function(targetIdx) {
+  _goToSection(targetIdx);
+  setTimeout(updateDots, 50);
+};
+
+// Re-wire event listeners to use patched version
+// (already using goToSection directly, dots update via setTimeout above)
+// Patch: override internal references
+Object.defineProperty(window, '_snapGoTo', { value: goToSection });
+
+// Actually re-assign so all internal calls update dots too:
+// We'll wrap via a simpler approach — hook into the animation end
+const origGoTo = goToSection;
+function goToSectionWithDots(targetIdx) {
+  origGoTo(targetIdx);
+  // Update dots after a tick (currentIdx already updated inside origGoTo)
+  requestAnimationFrame(updateDots);
+}
+
+// Override wheel / keyboard / touch to use wrapped version
+// (rebuild those handlers pointing to goToSectionWithDots)
+// Easier: just patch handleNext / handlePrev
+function handleNextDot() { goToSectionWithDots(currentIdx + 1); }
+function handlePrevDot() { goToSectionWithDots(currentIdx - 1); }
+
+// Rebuild wheel handler
+window.addEventListener('wheel', (e) => {
+  if (!snapMode) return;
+  const el = SECTIONS[currentIdx].el;
+  const scrollable = el.scrollHeight > el.clientHeight + 2;
+  if (scrollable) {
+    const atTop    = el.scrollTop <= 0;
+    const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 2;
+    if (e.deltaY > 0 && !atBottom) return;
+    if (e.deltaY < 0 && !atTop) return;
+  }
+  e.preventDefault();
+  wheelAccum += e.deltaY;
+  if (Math.abs(wheelAccum) >= WHEEL_THRESHOLD) {
+    wheelAccum > 0 ? handleNextDot() : handlePrevDot();
+    wheelAccum = 0;
+  }
+}, { passive: false });
+
+window.addEventListener('touchend', (e) => {
+  if (!snapMode) return;
+  const dy = touchStartY - e.changedTouches[0].clientY;
+  const el = SECTIONS[currentIdx].el;
+  const scrollable = el.scrollHeight > el.clientHeight + 2;
+  if (scrollable) {
+    const atTop    = el.scrollTop <= 0;
+    const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 2;
+    if (dy > 0 && !atBottom) return;
+    if (dy < 0 && !atTop) return;
+  }
+  if (Math.abs(dy) >= TOUCH_THRESHOLD) {
+    dy > 0 ? handleNextDot() : handlePrevDot();
+  }
+}, { passive: true });
+
+window.addEventListener('keydown', (e) => {
+  if (!snapMode) return;
+  if (e.key === 'ArrowDown' || e.key === 'PageDown') { e.preventDefault(); handleNextDot(); }
+  if (e.key === 'ArrowUp'   || e.key === 'PageUp')   { e.preventDefault(); handlePrevDot(); }
+});
+
+navLinkEls.forEach(a => {
+  a.addEventListener('click', (e) => {
+    if (!snapMode) return;
+    e.preventDefault();
+    const text = a.textContent.trim().toUpperCase();
+    const idx = SECTIONS.findIndex(s => s.name === text);
+    if (idx !== -1) goToSectionWithDots(idx);
+  });
+});
+
+// ── Init ──────────────────────────────────────────────────
 window.addEventListener('resize', () => {
   updateScrollHeight();
-  tick();
+  if (!snapMode) tick();
 });
 
 updateScrollHeight();
