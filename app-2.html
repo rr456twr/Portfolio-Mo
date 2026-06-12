@@ -1,385 +1,915 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-TW">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>APP - 一風堂點餐 APP</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Noto+Sans+TC:wght@300;400;500&display=swap" rel="stylesheet">
-  <link href="https://fonts.cdnfonts.com/css/broadway" rel="stylesheet">
-  <style>
-    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-
-    :root {
-      --font-menu: 'Amarna Light', 'Nirmala UI', sans-serif;
-      --font-zh: 'Noto Sans TC', 'Nirmala UI', sans-serif;
-      --font-serif: 'Cormorant Garamond', serif;
-      --bg: #F1F2F4;
-      --bg2: #E8E9EC;
-      --border: rgba(0,0,0,0.09);
-      --text: #1a1a1a;
-      --text-muted: #444444;
-      --text-light: #444444;
-      --accent: #CB4237;
-      --accent-dark: #9e2e25;
-    }
-
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--font-zh);
-      font-weight: 300;
-      line-height: 1.8;
-      -webkit-font-smoothing: antialiased;
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>APP - 一風堂點餐 APP</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Noto+Sans+TC:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link href="https://fonts.cdnfonts.com/css/broadway" rel="stylesheet" />
+    <style>
+      *,
+      *::before,
+      *::after {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
       }
 
-    #cursor {
-      position: fixed; width: 36px; height: 36px;
-      border-radius: 50%; pointer-events: none; z-index: 9999;
-      top: 0; left: 0; transform: translate(-50%, -50%);
-      background: rgba(30,30,30,0.06);
-      border: 1.5px solid rgba(30,30,30,0.5);
-    }
-    @media (hover: hover) and (pointer: fine) { body { cursor: none; } }
-    @media (hover: none), (pointer: coarse) { #cursor { display: none; } }
-    #cursor::after {
-      content: ''; position: absolute; top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      width: 6px; height: 6px; border-radius: 50%; background: #1a1a1a;
-    }
+      :root {
+        --font-menu: "Amarna Light", "Nirmala UI", sans-serif;
+        --font-zh: "Noto Sans TC", "Nirmala UI", sans-serif;
+        --font-serif: "Cormorant Garamond", serif;
+        --bg: #f1f2f4;
+        --bg2: #e8e9ec;
+        --border: rgba(0, 0, 0, 0.09);
+        --text: #1a1a1a;
+        --text-muted: #444444;
+        --text-light: #444444;
+        --accent: #cb4237;
+        --accent-dark: #9e2e25;
+      }
 
-    /* ── NAV ── */
-    #nav { position: fixed; top: 40px; left: 0; right: 0; display: flex; justify-content: center; align-items: center; padding: clamp(24px,4vw,32px) clamp(24px,4vw,56px); gap: clamp(24px,6vw,85px); z-index: 200; --nav-fg: #1a1a1a; background: rgba(249,248,246,0.25); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); }
-    .nav-links { display: flex; align-items: center; gap: clamp(16px,2.2vw,32px); flex-wrap: wrap; justify-content: center; }
-    #nav a { font-family: var(--font-menu); font-size: clamp(11px,1.1vw,16px); font-weight: 400; letter-spacing: 0.5em; color: var(--nav-fg); text-decoration: none; text-transform: uppercase; transition: color 0.4s ease, font-weight 0.2s ease; padding: 10px; position: relative; }
-    #nav a:not(.contact)::after { content: ''; position: absolute; bottom: 4px; left: 10px; right: 10px; height: 1.5px; background: currentColor; transform: scaleX(0); transform-origin: left center; transition: transform 0.3s ease, opacity 0.3s ease; opacity: 0; }
-    #nav a:not(.contact):hover { font-weight: 700; }
-    #nav a:not(.contact):hover::after { transform: scaleX(1); opacity: 1; }
-    #nav a:not(.contact).nav-active { font-weight: 700; }
-    #nav a:not(.contact).nav-active::after { transform: scaleX(1); opacity: 1; }
-    #nav a.contact { background: #fff; padding: 10px 22px; border-radius: 999px; font-weight: 700; letter-spacing: 0.5em; color: #222; box-shadow: 0 2px 6px rgba(0,0,0,0.10), 0 8px 18px rgba(0,0,0,0.08); transition: background 0.28s, color 0.28s; }
-    #nav a.contact:hover { background: #626262; color: #fff !important; }
-    .nav-hamburger { display: none; flex-direction: column; justify-content: center; gap: 5px; background: none; border: none; cursor: pointer; padding: 6px; z-index: 401; }
-    .nav-hamburger span { display: block; width: 22px; height: 1.5px; background: var(--nav-fg, #1a1a1a); border-radius: 2px; transition: transform 0.3s ease, opacity 0.3s ease; transform-origin: center; }
-    .nav-hamburger.is-open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
-    .nav-hamburger.is-open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
-    .nav-hamburger.is-open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
-    .nav-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 350; opacity: 0; transition: opacity 0.3s ease; }
-    .nav-overlay.is-open { opacity: 1; }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--font-zh);
+        font-weight: 300;
+        line-height: 1.8;
+        -webkit-font-smoothing: antialiased;
+      }
 
-    @media (max-width: 768px) {
-      body { cursor: auto; } #cursor { display: none; }
-      #nav { top: 0; padding: 14px 20px; flex-direction: row; justify-content: space-between; background: rgba(249,248,246,0.25); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); }
-      .nav-hamburger { display: flex; }
-      .nav-overlay { display: block; pointer-events: none; }
-      .nav-overlay.is-open { pointer-events: auto; }
-      .nav-links { position: fixed; top: 0; right: -100%; width: min(72vw,280px); height: 100dvh; background: rgba(241,242,244,0.98); backdrop-filter: blur(20px); flex-direction: column; align-items: flex-start; justify-content: center; gap: 6px; padding: 80px 36px 60px; z-index: 400; transition: right 0.38s cubic-bezier(0.4,0,0.2,1); }
-      .nav-links.is-open { right: 0; }
-      .nav-links a { font-size: 11px !important; letter-spacing: 0.32em; padding: 12px 0 !important; color: #1a1a1a !important; border-bottom: 1px solid rgba(0,0,0,0.08); width: 100%; }
-      #nav-contact { background: transparent !important; border: 1px solid rgba(0,0,0,0.3) !important; border-radius: 24px !important; padding: 10px 18px !important; color: #1a1a1a !important; box-shadow: none !important; margin-top: 20px; align-self: flex-start; }
-    }
+      #cursor {
+        position: fixed;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 9999;
+        top: 0;
+        left: 0;
+        transform: translate(-50%, -50%);
+        background: rgba(30, 30, 30, 0.06);
+        border: 1.5px solid rgba(30, 30, 30, 0.5);
+      }
+      @media (hover: hover) and (pointer: fine) {
+        body {
+          cursor: none;
+        }
+      }
+      @media (hover: none), (pointer: coarse) {
+        #cursor {
+          display: none;
+        }
+      }
+      #cursor::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #1a1a1a;
+      }
 
-    /* ── LAYOUT ── */
-    .page-wrap { padding-top: clamp(80px, 12vw, 300px); }
-    @media (max-width: 768px) { .page-wrap { padding-top: 72px; } }
+      /* ── NAV ── */
+      #nav {
+        position: fixed;
+        top: 40px;
+        left: 0;
+        right: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: clamp(24px, 4vw, 32px) clamp(24px, 4vw, 56px);
+        gap: clamp(24px, 6vw, 85px);
+        z-index: 200;
+        --nav-fg: #1a1a1a;
+        background: rgba(249, 248, 246, 0.25);
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
+      }
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: clamp(16px, 2.2vw, 32px);
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      #nav a {
+        font-family: var(--font-menu);
+        font-size: clamp(11px, 1.1vw, 16px);
+        font-weight: 400;
+        letter-spacing: 0.5em;
+        color: var(--nav-fg);
+        text-decoration: none;
+        text-transform: uppercase;
+        transition:
+          color 0.4s ease,
+          font-weight 0.2s ease;
+        padding: 10px;
+        position: relative;
+      }
+      #nav a:not(.contact)::after {
+        content: "";
+        position: absolute;
+        bottom: 4px;
+        left: 10px;
+        right: 10px;
+        height: 1.5px;
+        background: currentColor;
+        transform: scaleX(0);
+        transform-origin: left center;
+        transition:
+          transform 0.3s ease,
+          opacity 0.3s ease;
+        opacity: 0;
+      }
+      #nav a:not(.contact):hover {
+        font-weight: 700;
+      }
+      #nav a:not(.contact):hover::after {
+        transform: scaleX(1);
+        opacity: 1;
+      }
+      #nav a:not(.contact).nav-active {
+        font-weight: 700;
+      }
+      #nav a:not(.contact).nav-active::after {
+        transform: scaleX(1);
+        opacity: 1;
+      }
+      #nav a.contact {
+        background: #fff;
+        padding: 10px 22px;
+        border-radius: 999px;
+        font-weight: 700;
+        letter-spacing: 0.5em;
+        color: #222;
+        box-shadow:
+          0 2px 6px rgba(0, 0, 0, 0.1),
+          0 8px 18px rgba(0, 0, 0, 0.08);
+        transition:
+          background 0.28s,
+          color 0.28s;
+      }
+      #nav a.contact:hover {
+        background: #626262;
+        color: #fff !important;
+      }
+      .nav-hamburger {
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        gap: 5px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 6px;
+        z-index: 401;
+      }
+      .nav-hamburger span {
+        display: block;
+        width: 22px;
+        height: 1.5px;
+        background: var(--nav-fg, #1a1a1a);
+        border-radius: 2px;
+        transition:
+          transform 0.3s ease,
+          opacity 0.3s ease;
+        transform-origin: center;
+      }
+      .nav-hamburger.is-open span:nth-child(1) {
+        transform: translateY(6.5px) rotate(45deg);
+      }
+      .nav-hamburger.is-open span:nth-child(2) {
+        opacity: 0;
+        transform: scaleX(0);
+      }
+      .nav-hamburger.is-open span:nth-child(3) {
+        transform: translateY(-6.5px) rotate(-45deg);
+      }
+      .nav-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.4);
+        z-index: 350;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+      .nav-overlay.is-open {
+        opacity: 1;
+      }
 
-    /* ── HERO ── */
-    .hero { max-width: 980px; margin: 0 auto; padding: 0 clamp(24px,5vw,64px) 80px; }
-    .hero-eyebrow { font-family: var(--font-menu); font-size: clamp(9px,0.9vw,11px); letter-spacing: 0.4em; text-transform: uppercase; color: var(--text-light); margin-bottom: 28px; }
-    .hero-title { font-family: 'Broadway', var(--font-menu); font-size: clamp(40px,6vw,96px); font-weight: 400; letter-spacing: 0.05em; color: var(--text); line-height: 1.05; margin-bottom: 32px; }
-    .hero-title span { color: var(--accent); }
-    .hero-sub { font-size: clamp(14px,1.2vw,17px); color: var(--text-muted); max-width: 560px; line-height: 2; margin-bottom: 48px; font-weight: 300; }
-    .hero-meta { display: flex; gap: clamp(24px,4vw,56px); flex-wrap: wrap; padding-top: 32px; border-top: 1px solid var(--border); }
-    .hero-meta-label { font-family: var(--font-menu); font-size: 12px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--text-light); margin-bottom: 6px; }
-    .hero-meta-value { font-size: 13px; color: var(--text); letter-spacing: 0.05em; }
+      @media (max-width: 768px) {
+        body {
+          cursor: auto;
+        }
+        #cursor {
+          display: none;
+        }
+        #nav {
+          top: 0;
+          padding: 14px 20px;
+          flex-direction: row;
+          justify-content: space-between;
+          background: rgba(249, 248, 246, 0.25);
+          backdrop-filter: blur(5px);
+          -webkit-backdrop-filter: blur(5px);
+        }
+        .nav-hamburger {
+          display: flex;
+        }
+        .nav-overlay {
+          display: block;
+          pointer-events: none;
+        }
+        .nav-overlay.is-open {
+          pointer-events: auto;
+        }
+        .nav-links {
+          position: fixed;
+          top: 0;
+          right: -100%;
+          width: min(72vw, 280px);
+          height: 100dvh;
+          background: rgba(241, 242, 244, 0.98);
+          backdrop-filter: blur(20px);
+          flex-direction: column;
+          align-items: flex-start;
+          justify-content: center;
+          gap: 6px;
+          padding: 80px 36px 60px;
+          z-index: 400;
+          transition: right 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .nav-links.is-open {
+          right: 0;
+        }
+        .nav-links a {
+          font-size: 11px !important;
+          letter-spacing: 0.32em;
+          padding: 12px 0 !important;
+          color: #1a1a1a !important;
+          border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+          width: 100%;
+        }
+        #nav-contact {
+          background: transparent !important;
+          border: 1px solid rgba(0, 0, 0, 0.3) !important;
+          border-radius: 24px !important;
+          padding: 10px 18px !important;
+          color: #1a1a1a !important;
+          box-shadow: none !important;
+          margin-top: 20px;
+          align-self: flex-start;
+        }
+      }
 
-    /* ── HERO IMAGE ── */
-    .hero-image { width: 100%; max-height: 600px; overflow: hidden; border-bottom: 1px solid var(--border); }
-    .hero-image img { width: 100%; object-fit: cover; object-position: top; display: block; }
+      /* ── LAYOUT ── */
+      .page-wrap {
+        padding-top: clamp(80px, 12vw, 300px);
+      }
+      @media (max-width: 768px) {
+        .page-wrap {
+          padding-top: 100px;
+        }
+      }
 
-    /* ── SECTION ── */
-    .section { max-width: 980px; margin: 0 auto; padding: clamp(56px,7vw,96px) clamp(24px,5vw,64px); border-bottom: 1px solid var(--border); }
-    .section-num { font-family: var(--font-menu); font-size: 12px; letter-spacing: 0.4em; text-transform: uppercase; color: var(--accent); margin-bottom: 16px; }
-    .section-title { font-family: var(--font-serif); font-size: clamp(28px,3.5vw,48px); font-weight: 300; letter-spacing: 0.06em; color: var(--text); margin-bottom: 40px; line-height: 1.2; }
+      /* ── HERO ── */
+      .hero {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 0 clamp(24px, 5vw, 64px) 80px;
+      }
+      .hero-eyebrow {
+        font-family: var(--font-menu);
+        font-size: clamp(9px, 0.9vw, 11px);
+        letter-spacing: 0.4em;
+        text-transform: uppercase;
+        color: var(--text-light);
+        margin-bottom: 28px;
+      }
+      .hero-title {
+        font-family: "Broadway", var(--font-menu);
+        font-size: clamp(40px, 6vw, 96px);
+        font-weight: 400;
+        letter-spacing: 0.05em;
+        color: var(--text);
+        line-height: 1.05;
+        margin-bottom: 32px;
+      }
+      .hero-title span {
+        color: var(--accent);
+      }
+      .hero-sub {
+        font-size: clamp(14px, 1.2vw, 17px);
+        color: var(--text-muted);
+        max-width: 560px;
+        line-height: 2;
+        margin-bottom: 48px;
+        font-weight: 300;
+      }
+      .hero-meta {
+        display: flex;
+        gap: clamp(24px, 4vw, 56px);
+        flex-wrap: wrap;
+        padding-top: 32px;
+        border-top: 1px solid var(--border);
+      }
+      .hero-meta-label {
+        font-family: var(--font-menu);
+        font-size: 12px;
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        color: var(--text-light);
+        margin-bottom: 6px;
+      }
+      .hero-meta-value {
+        font-size: 13px;
+        color: var(--text);
+        letter-spacing: 0.05em;
+      }
 
-    /* ── CONTEXT GRID ── */
-    .context-grid { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(24px,4vw,56px); }
-    .context-block h3 { font-family: var(--font-menu); font-size: 12px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--text-light); margin-bottom: 14px; }
-    .context-block p { font-size: 14px; color: var(--text-muted); line-height: 2; }
+      /* ── HERO IMAGE ── */
+      .hero-image {
+        width: 100%;
+        max-height: 600px;
+        overflow: hidden;
+        border-bottom: 1px solid var(--border);
+      }
+      .hero-image img {
+        width: 100%;
+        object-fit: cover;
+        object-position: top;
+        display: block;
+      }
 
-    /* ── INSIGHT BOX ── */
-    .insight-box { background: var(--accent); padding: 24px 28px; margin-bottom: 32px; }
-    .insight-label { font-family: var(--font-menu); font-size: 12px; letter-spacing: 0.3em; text-transform: uppercase; color: rgba(255,255,255,0.6); margin-bottom: 10px; }
-    .insight-text { font-size: 14px; color: #fff; line-height: 1.9; }
-    .insight-text strong { font-weight: 500; }
+      /* ── SECTION ── */
+      .section {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: clamp(56px, 7vw, 96px) clamp(24px, 5vw, 64px);
+        border-bottom: 1px solid var(--border);
+      }
+      .section-num {
+        font-family: var(--font-menu);
+        font-size: 12px;
+        letter-spacing: 0.4em;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin-bottom: 16px;
+      }
+      .section-title {
+        font-family: var(--font-serif);
+        font-size: clamp(28px, 3.5vw, 48px);
+        font-weight: 300;
+        letter-spacing: 0.06em;
+        color: var(--text);
+        margin-bottom: 40px;
+        line-height: 1.2;
+      }
 
-    /* ── PAIN POINTS ── */
-    .pain-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); margin-bottom: 32px; }
-    .pain-item { background: var(--bg); padding: clamp(20px,2.5vw,32px); }
-    .pain-num { font-family: var(--font-menu); font-size: 12px; letter-spacing: 0.35em; color: var(--accent); margin-bottom: 10px; }
-    .pain-title { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 8px; }
-    .pain-desc { font-size: 12px; color: var(--text-muted); line-height: 1.8; }
+      /* ── CONTEXT GRID ── */
+      .context-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: clamp(24px, 4vw, 56px);
+      }
+      .context-block h3 {
+        font-family: var(--font-menu);
+        font-size: 12px;
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        color: var(--text-light);
+        margin-bottom: 14px;
+      }
+      .context-block p {
+        font-size: 14px;
+        color: var(--text-muted);
+        line-height: 2;
+      }
 
-    /* ── PROCESS IMAGE ── */
-    .process-img { width: 100%; border: 1px solid var(--border); display: block; margin-bottom: 20px; }
-    .process-caption { font-family: var(--font-menu); font-size: 14px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-light); margin-bottom: 32px; }
+      /* ── INSIGHT BOX ── */
+      .insight-box {
+        background: var(--accent);
+        padding: 24px 28px;
+        margin-bottom: 32px;
+      }
+      .insight-label {
+        font-family: var(--font-menu);
+        font-size: 12px;
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.6);
+        margin-bottom: 10px;
+      }
+      .insight-text {
+        font-size: 14px;
+        color: #fff;
+        line-height: 1.9;
+      }
+      .insight-text strong {
+        font-weight: 500;
+      }
 
-    /* ── DESIGN SYSTEM ── */
-    .ds-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border); margin-bottom: 24px; }
-    .ds-item { background: var(--bg); padding: clamp(20px,2.5vw,32px); }
-    .ds-label { font-family: var(--font-menu); font-size: 12px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--text-light); margin-bottom: 14px; }
-    .color-swatches { display: flex; gap: 12px; flex-wrap: wrap; }
-    .swatch { display: flex; flex-direction: column; align-items: center; gap: 6px; }
-    .swatch-color { width: 44px; height: 44px; border-radius: 2px; border: 1px solid var(--border); }
-    .swatch-label { font-size: 14px; color: var(--text-light); letter-spacing: 0.05em; }
-    .ds-desc { font-size: 13px; color: var(--text-muted); line-height: 1.9; }
+      /* ── PAIN POINTS ── */
+      .pain-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1px;
+        background: var(--border);
+        border: 1px solid var(--border);
+        margin-bottom: 32px;
+      }
+      .pain-item {
+        background: var(--bg);
+        padding: clamp(20px, 2.5vw, 32px);
+      }
+      .pain-num {
+        font-family: var(--font-menu);
+        font-size: 12px;
+        letter-spacing: 0.35em;
+        color: var(--accent);
+        margin-bottom: 10px;
+      }
+      .pain-title {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text);
+        margin-bottom: 8px;
+      }
+      .pain-desc {
+        font-size: 12px;
+        color: var(--text-muted);
+        line-height: 1.8;
+      }
 
-    /* ── DECISION BOX ── */
-    .decision-box { background: var(--bg2); border-left: 2px solid var(--accent); padding: 20px 24px; font-size: 13px; color: var(--text-muted); line-height: 1.9; margin-top: 16px; }
-    .decision-box strong { color: var(--text); font-weight: 500; }
+      /* ── PROCESS IMAGE ── */
+      .process-img {
+        width: 100%;
+        border: 1px solid var(--border);
+        display: block;
+        margin-bottom: 20px;
+      }
+      .process-caption {
+        font-family: var(--font-menu);
+        font-size: 14px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--text-light);
+        margin-bottom: 32px;
+      }
 
-    /* ── SCREENS GRID ── */
-    .screens-grid { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(12px,2vw,20px); }
-    .screen-item img { width: 100%; display: block; border: 1px solid var(--border); }
-    .screen-caption { font-family: var(--font-menu); font-size: 14px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-light); margin-top: 8px; }
+      /* ── DESIGN SYSTEM ── */
+      .ds-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1px;
+        background: var(--border);
+        border: 1px solid var(--border);
+        margin-bottom: 24px;
+      }
+      .ds-item {
+        background: var(--bg);
+        padding: clamp(20px, 2.5vw, 32px);
+      }
+      .ds-label {
+        font-family: var(--font-menu);
+        font-size: 12px;
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        color: var(--text-light);
+        margin-bottom: 14px;
+      }
+      .color-swatches {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .swatch {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+      }
+      .swatch-color {
+        width: 44px;
+        height: 44px;
+        border-radius: 2px;
+        border: 1px solid var(--border);
+      }
+      .swatch-label {
+        font-size: 14px;
+        color: var(--text-light);
+        letter-spacing: 0.05em;
+      }
+      .ds-desc {
+        font-size: 13px;
+        color: var(--text-muted);
+        line-height: 1.9;
+      }
 
-    /* ── OUTCOME ── */
-    .outcome-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); margin-bottom: 32px; }
-    .stat-item { background: var(--bg); padding: clamp(24px,3vw,40px); }
-    .stat-num { font-family: var(--font-serif); font-size: clamp(36px,5vw,64px); font-weight: 300; color: var(--accent); line-height: 1; margin-bottom: 8px; }
-    .stat-label { font-size: 12px; color: var(--text-muted); line-height: 1.7; }
+      /* ── DECISION BOX ── */
+      .decision-box {
+        background: var(--bg2);
+        border-left: 2px solid var(--accent);
+        padding: 20px 24px;
+        font-size: 13px;
+        color: var(--text-muted);
+        line-height: 1.9;
+        margin-top: 16px;
+      }
+      .decision-box strong {
+        color: var(--text);
+        font-weight: 500;
+      }
 
-    /* ── FOOTER ── */
-    footer { max-width: 980px; margin: 0 auto; padding: clamp(40px,5vw,64px) clamp(24px,5vw,64px); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
-    .footer-back { font-family: var(--font-menu); font-size: 14px; letter-spacing: 0.35em; text-transform: uppercase; color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
-    .footer-back:hover { color: var(--accent); }
-    .footer-credit { font-family: var(--font-menu); font-size: 14px; letter-spacing: 0.2em; color: var(--text-light); }
+      /* ── SCREENS GRID ── */
+      .screens-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: clamp(12px, 2vw, 20px);
+      }
+      .screen-item img {
+        width: 100%;
+        display: block;
+        border: 1px solid var(--border);
+      }
+      .screen-caption {
+        font-family: var(--font-menu);
+        font-size: 14px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--text-light);
+        margin-top: 8px;
+      }
 
-    @media (max-width: 700px) {
-      .context-grid, .ds-grid, .screens-grid { grid-template-columns: 1fr; }
-      .pain-grid { grid-template-columns: 1fr; }
-      .outcome-stats { grid-template-columns: 1fr 1fr; }
-    }
-  </style>
-</head>
-<body>
+      /* ── OUTCOME ── */
+      .outcome-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1px;
+        background: var(--border);
+        border: 1px solid var(--border);
+        margin-bottom: 32px;
+      }
+      .stat-item {
+        background: var(--bg);
+        padding: clamp(24px, 3vw, 40px);
+      }
+      .stat-num {
+        font-family: var(--font-serif);
+        font-size: clamp(36px, 5vw, 64px);
+        font-weight: 300;
+        color: var(--accent);
+        line-height: 1;
+        margin-bottom: 8px;
+      }
+      .stat-label {
+        font-size: 12px;
+        color: var(--text-muted);
+        line-height: 1.7;
+      }
 
-  <div id="cursor"></div>
+      /* ── FOOTER ── */
+      footer {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: clamp(40px, 5vw, 64px) clamp(24px, 5vw, 64px);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+      }
+      .footer-back {
+        font-family: var(--font-menu);
+        font-size: 14px;
+        letter-spacing: 0.35em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        text-decoration: none;
+        transition: color 0.2s;
+      }
+      .footer-back:hover {
+        color: var(--accent);
+      }
+      .footer-credit {
+        font-family: var(--font-menu);
+        font-size: 14px;
+        letter-spacing: 0.2em;
+        color: var(--text-light);
+      }
 
-  <nav id="nav">
-    <button class="nav-hamburger" id="nav-hamburger" aria-label="開啟選單" aria-expanded="false">
-      <span></span><span></span><span></span>
-    </button>
-    <div class="nav-overlay" id="nav-overlay"></div>
-    <div class="nav-links" id="nav-links">
-      <a href="./index.html">HOME</a>
-      <a href="./ui.html" class="nav-active">MOBILE</a>
-      <a href="./web.html">WEB</a>
-      <a href="./ill.html">ILLUSTRATION</a>
-      <a href="./photography.html">PHOTOGRAPHY</a>
-    </div>
-    <a href="./contact.html" class="contact" id="nav-contact">CONTACT</a>
-  </nav>
+      @media (max-width: 700px) {
+        .context-grid,
+        .ds-grid,
+        .screens-grid {
+          grid-template-columns: 1fr;
+        }
+        .pain-grid {
+          grid-template-columns: 1fr;
+        }
+        .outcome-stats {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="cursor"></div>
 
-  <div class="page-wrap">
-
-    <!-- HERO -->
-    <div class="hero">
-      <p class="hero-sub">
-        以親身工作經驗為出發點，為一風堂設計一套線上點餐 APP，解決疫情後餐廳面臨的衛生疑慮、紙本菜單痛點，以及顧客與服務員之間的溝通障礙。
-      </p>
-      <div class="hero-meta">
-        <div>
-          <div class="hero-meta-label">Role</div>
-          <div class="hero-meta-value">獨立 UI/UX 設計師</div>
-        </div>
-        <div>
-          <div class="hero-meta-label">Type</div>
-          <div class="hero-meta-value">個人練習專案</div>
-        </div>
-        <div>
-          <div class="hero-meta-label">Tools</div>
-          <div class="hero-meta-value">Figma</div>
-        </div>
-        <div>
-          <div class="hero-meta-label">Deliverables</div>
-          <div class="hero-meta-value">User Flow · Wireframe · UI · Prototype</div>
-        </div>
+    <nav id="nav">
+      <button
+        class="nav-hamburger"
+        id="nav-hamburger"
+        aria-label="開啟選單"
+        aria-expanded="false"
+      >
+        <span></span><span></span><span></span>
+      </button>
+      <div class="nav-overlay" id="nav-overlay"></div>
+      <div class="nav-links" id="nav-links">
+        <a href="./index.html">HOME</a>
+        <a href="./ui.html" class="nav-active">MOBILE</a>
+        <a href="./web.html">WEB</a>
+        <a href="./ill.html">ILLUSTRATION</a>
+        <a href="./photography.html">PHOTOGRAPHY</a>
       </div>
-    </div>
+      <a href="./contact.html" class="contact" id="nav-contact">CONTACT</a>
+    </nav>
 
-    <!-- HERO IMAGE -->
-    <div class="hero-image">
-    </div>
-
-    <!-- 01 BACKGROUND -->
-    <div class="section">
-      <p class="section-num">01 — Background</p>
-      <h2 class="section-title">專案背景</h2>
-      <div class="context-grid">
-        <div class="context-block">
-          <h3>起點</h3>
-          <p>我曾在一風堂打工，親身經歷了整套服務流程——顧客看紙本菜單、呼叫服務員點餐、結帳排隊。這套流程在正常時期就存在效率問題，疫情爆發後更突顯出多個未被解決的痛點。</p>
-        </div>
-        <div class="context-block">
-          <h3>設計目標</h3>
-          <p>設計一套簡潔的線上點餐 APP，讓顧客從入座到送出訂單只需要一支手機。降低服務員的溝通負擔，同時提升顧客的用餐體驗與衛生安全感。</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- 02 RESEARCH -->
-    <div class="section">
-      <p class="section-num">02 — User Research</p>
-      <h2 class="section-title">使用者痛點</h2>
-
-      <div class="insight-box">
-        <p class="insight-label">Research Method</p>
-        <p class="insight-text">基於親身工作經驗的觀察研究。曾在一風堂實際擔任服務員，直接觀察到顧客與員工在點餐流程中反覆遇到的問題，疫情爆發後這些問題更加顯著。</p>
-      </div>
-
-      <div class="pain-grid">
-        <div class="pain-item">
-          <p class="pain-num">痛點 01</p>
-          <h3 class="pain-title">衛生疑慮</h3>
-          <p class="pain-desc">疫情環境下，紙本菜單經過大量顧客翻閱，成為接觸傳播的潛在風險，顧客普遍感到不安。</p>
-        </div>
-        <div class="pain-item">
-          <p class="pain-num">痛點 02</p>
-          <h3 class="pain-title">溝通不便</h3>
-          <p class="pain-desc">餐廳環境嘈雜，顧客與服務員之間的口頭溝通容易出錯，尤其是客製化需求（湯底、配料）更難準確傳達。</p>
-        </div>
-        <div class="pain-item">
-          <p class="pain-num">痛點 03</p>
-          <h3 class="pain-title">等待焦慮</h3>
-          <p class="pain-desc">紙本菜單無法即時更新售完資訊，顧客點了想吃的品項才被告知已售完，造成體驗落差。</p>
-        </div>
-      </div>
-
-      <div class="decision-box">
-        <strong>設計決策依據</strong><br>
-        三個痛點都指向同一個解法：讓顧客用自己的手機完成點餐，不需要接觸任何公共物品，也不需要與服務員口頭溝通。這確立了整個 APP 的核心設計方向。
-      </div>
-    </div>
-
-    <!-- 03 USER FLOW -->
-    <div class="section">
-      <p class="section-num">03 — User Flow</p>
-      <h2 class="section-title">使用者流程</h2>
-      <img class="process-img" src="./pic/11 (4).webp" alt="User Flow" onerror="this.style.display='none'" />
-      <p class="process-caption">簡易 User Flow — 登入 → 平台首頁 → 點餐 → 確認訂單 → 送出</p>
-      <div class="decision-box">
-        <strong>為什麼只有一條主路徑？</strong><br>
-        點餐 APP 的核心任務只有一個：讓顧客快速送出訂單。如果加入過多分支路徑，會讓使用者分心或迷失，反而降低效率。刻意將流程精簡為單一主線，讓顧客在最短的步驟內完成點餐。
-      </div>
-    </div>
-
-    <!-- 04 WIREFRAME -->
-    <div class="section">
-      <p class="section-num">04 — Wireframe</p>
-      <h2 class="section-title">線框稿</h2>
-      <img class="process-img" src="./pic/11 (2).webp" alt="Wireframe" onerror="this.style.display='none'" />
-      <p class="process-caption">四個主要畫面的線框稿 — 歡迎頁、計算頁、帶入頁、購物車</p>
-    </div>
-
-    <!-- 05 DESIGN SYSTEM -->
-    <div class="section">
-      <p class="section-num">05 — Design System</p>
-      <h2 class="section-title">視覺設計系統</h2>
-      <div class="ds-grid">
-        <div class="ds-item">
-          <p class="ds-label">Color Palette</p>
-          <div class="color-swatches">
-            <div class="swatch">
-              <div class="swatch-color" style="background:#CB4237"></div>
-              <span class="swatch-label">#CB4237</span>
-            </div>
-            <div class="swatch">
-              <div class="swatch-color" style="background:#282C33"></div>
-              <span class="swatch-label">#282C33</span>
-            </div>
-            <div class="swatch">
-              <div class="swatch-color" style="background:#FFFFFF; border: 1px solid #ddd;"></div>
-              <span class="swatch-label">#FFFFFF</span>
-            </div>
-            <div class="swatch">
-              <div class="swatch-color" style="background:#808292"></div>
-              <span class="swatch-label">#808292</span>
+    <div class="page-wrap">
+      <!-- HERO -->
+      <div class="hero">
+        <p class="hero-sub">
+          以親身工作經驗為出發點，為一風堂設計一套線上點餐
+          APP，解決疫情後餐廳面臨的衛生疑慮、紙本菜單痛點，以及顧客與服務員之間的溝通障礙。
+        </p>
+        <div class="hero-meta">
+          <div>
+            <div class="hero-meta-label">Role</div>
+            <div class="hero-meta-value">獨立 UI/UX 設計師</div>
+          </div>
+          <div>
+            <div class="hero-meta-label">Type</div>
+            <div class="hero-meta-value">個人練習專案</div>
+          </div>
+          <div>
+            <div class="hero-meta-label">Tools</div>
+            <div class="hero-meta-value">Figma</div>
+          </div>
+          <div>
+            <div class="hero-meta-label">Deliverables</div>
+            <div class="hero-meta-value">
+              User Flow · Wireframe · UI · Prototype
             </div>
           </div>
         </div>
-        <div class="ds-item">
-          <p class="ds-label">Typography</p>
-          <p class="ds-desc" style="font-size:13px">Noto Serif / Noto Sans TC<br><br>標題使用襯線字體傳達日式餐廳的精緻感，內文使用無襯線字體確保清晰易讀。</p>
+      </div>
+
+      <!-- HERO IMAGE -->
+      <div class="hero-image"></div>
+
+      <!-- 01 BACKGROUND -->
+      <div class="section">
+        <p class="section-num">01 — Background</p>
+        <h2 class="section-title">專案背景</h2>
+        <div class="context-grid">
+          <div class="context-block">
+            <h3>起點</h3>
+            <p>
+              我曾在一風堂打工，親身經歷了整套服務流程——顧客看紙本菜單、呼叫服務員點餐、結帳排隊。這套流程在正常時期就存在效率問題，疫情爆發後更突顯出多個未被解決的痛點。
+            </p>
+          </div>
+          <div class="context-block">
+            <h3>設計目標</h3>
+            <p>
+              設計一套簡潔的線上點餐
+              APP，讓顧客從入座到送出訂單只需要一支手機。降低服務員的溝通負擔，同時提升顧客的用餐體驗與衛生安全感。
+            </p>
+          </div>
         </div>
       </div>
-      <div class="decision-box">
-        <strong>色彩選擇邏輯</strong><br>
-        紅色（#CB4237）直接採用一風堂的品牌主色，確保 APP 視覺與品牌一致性。深黑（#282C33）作為背景和次要元素，呼應一風堂餐廳的沉穩氛圍，同時讓鮮豔的紅色更加突出。
+
+      <!-- 02 RESEARCH -->
+      <div class="section">
+        <p class="section-num">02 — User Research</p>
+        <h2 class="section-title">使用者痛點</h2>
+
+        <div class="insight-box">
+          <p class="insight-label">Research Method</p>
+          <p class="insight-text">
+            基於親身工作經驗的觀察研究。曾在一風堂實際擔任服務員，直接觀察到顧客與員工在點餐流程中反覆遇到的問題，疫情爆發後這些問題更加顯著。
+          </p>
+        </div>
+
+        <div class="pain-grid">
+          <div class="pain-item">
+            <p class="pain-num">痛點 01</p>
+            <h3 class="pain-title">衛生疑慮</h3>
+            <p class="pain-desc">
+              疫情環境下，紙本菜單經過大量顧客翻閱，成為接觸傳播的潛在風險，顧客普遍感到不安。
+            </p>
+          </div>
+          <div class="pain-item">
+            <p class="pain-num">痛點 02</p>
+            <h3 class="pain-title">溝通不便</h3>
+            <p class="pain-desc">
+              餐廳環境嘈雜，顧客與服務員之間的口頭溝通容易出錯，尤其是客製化需求（湯底、配料）更難準確傳達。
+            </p>
+          </div>
+          <div class="pain-item">
+            <p class="pain-num">痛點 03</p>
+            <h3 class="pain-title">等待焦慮</h3>
+            <p class="pain-desc">
+              紙本菜單無法即時更新售完資訊，顧客點了想吃的品項才被告知已售完，造成體驗落差。
+            </p>
+          </div>
+        </div>
+
+        <div class="decision-box">
+          <strong>設計決策依據</strong><br />
+          三個痛點都指向同一個解法：讓顧客用自己的手機完成點餐，不需要接觸任何公共物品，也不需要與服務員口頭溝通。這確立了整個
+          APP 的核心設計方向。
+        </div>
       </div>
+
+      <!-- 03 USER FLOW -->
+      <div class="section">
+        <p class="section-num">03 — User Flow</p>
+        <h2 class="section-title">使用者流程</h2>
+        <img
+          class="process-img"
+          src="./pic/11 (4).webp"
+          alt="User Flow"
+          onerror="this.style.display = 'none'"
+        />
+        <p class="process-caption">
+          簡易 User Flow — 登入 → 平台首頁 → 點餐 → 確認訂單 → 送出
+        </p>
+        <div class="decision-box">
+          <strong>為什麼只有一條主路徑？</strong><br />
+          點餐 APP
+          的核心任務只有一個：讓顧客快速送出訂單。如果加入過多分支路徑，會讓使用者分心或迷失，反而降低效率。刻意將流程精簡為單一主線，讓顧客在最短的步驟內完成點餐。
+        </div>
+      </div>
+
+      <!-- 04 WIREFRAME -->
+      <div class="section">
+        <p class="section-num">04 — Wireframe</p>
+        <h2 class="section-title">線框稿</h2>
+        <img
+          class="process-img"
+          src="./pic/11 (2).webp"
+          alt="Wireframe"
+          onerror="this.style.display = 'none'"
+        />
+        <p class="process-caption">
+          四個主要畫面的線框稿 — 歡迎頁、計算頁、帶入頁、購物車
+        </p>
+      </div>
+
+      <!-- 05 DESIGN SYSTEM -->
+      <div class="section">
+        <p class="section-num">05 — Design System</p>
+        <h2 class="section-title">視覺設計系統</h2>
+        <div class="ds-grid">
+          <div class="ds-item">
+            <p class="ds-label">Color Palette</p>
+            <div class="color-swatches">
+              <div class="swatch">
+                <div class="swatch-color" style="background: #cb4237"></div>
+                <span class="swatch-label">#CB4237</span>
+              </div>
+              <div class="swatch">
+                <div class="swatch-color" style="background: #282c33"></div>
+                <span class="swatch-label">#282C33</span>
+              </div>
+              <div class="swatch">
+                <div
+                  class="swatch-color"
+                  style="background: #ffffff; border: 1px solid #ddd"
+                ></div>
+                <span class="swatch-label">#FFFFFF</span>
+              </div>
+              <div class="swatch">
+                <div class="swatch-color" style="background: #808292"></div>
+                <span class="swatch-label">#808292</span>
+              </div>
+            </div>
+          </div>
+          <div class="ds-item">
+            <p class="ds-label">Typography</p>
+            <p class="ds-desc" style="font-size: 13px">
+              Noto Serif / Noto Sans TC<br /><br />標題使用襯線字體傳達日式餐廳的精緻感，內文使用無襯線字體確保清晰易讀。
+            </p>
+          </div>
+        </div>
+        <div class="decision-box">
+          <strong>色彩選擇邏輯</strong><br />
+          紅色（#CB4237）直接採用一風堂的品牌主色，確保 APP
+          視覺與品牌一致性。深黑（#282C33）作為背景和次要元素，呼應一風堂餐廳的沉穩氛圍，同時讓鮮豔的紅色更加突出。
+        </div>
+      </div>
+
+      <!-- 06 SCREENS -->
+      <div class="section">
+        <p class="section-num">06 — Key Screens</p>
+        <h2 class="section-title">主要畫面</h2>
+        <div class="screens-grid">
+          <div class="screen-item">
+            <img
+              src="./pic/11 (1).webp"
+              alt="APP 畫面設計"
+              onerror="this.style.display = 'none'"
+            />
+            <p class="screen-caption">APP 畫面設計</p>
+          </div>
+          <div class="screen-item">
+            <img
+              src="./pic/11 (3).webp"
+              alt="Prototype 設計"
+              onerror="this.style.display = 'none'"
+            />
+            <p class="screen-caption">Prototype 設計</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 07 OUTCOME -->
+      <div class="section">
+        <p class="section-num">07 — Outcome & Reflection</p>
+        <h2 class="section-title">成果與反思</h2>
+        <div class="outcome-stats">
+          <div class="stat-item">
+            <div class="stat-num">1</div>
+            <div class="stat-label">條主要流程<br />讓點餐路徑清晰不分心</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-num">3</div>
+            <div class="stat-label">個核心痛點<br />全部由設計回應</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-num">完整</div>
+            <div class="stat-label">
+              從 User Flow 到<br />Prototype 的完整交付
+            </div>
+          </div>
+        </div>
+        <div class="decision-box" style="border-left-color: var(--border)">
+          這個專案最特別的地方，是設計的起點來自真實的工作經驗而非假設。曾經在一風堂服務的那段時間，讓我對服務流程的每個細節有深刻的理解——哪些步驟浪費了員工的時間、哪些環節讓顧客感到挫折。<br /><br />
+          <strong>如果繼續發展這個專案</strong
+          >，我會加入外送流程的設計，以及針對服務員端的後台介面——讓點餐系統真正串聯前後場，而不只是解決顧客端的問題。
+        </div>
+      </div>
+
+      <footer></footer>
     </div>
 
-    <!-- 06 SCREENS -->
-    <div class="section">
-      <p class="section-num">06 — Key Screens</p>
-      <h2 class="section-title">主要畫面</h2>
-      <div class="screens-grid">
-        <div class="screen-item">
-          <img src="./pic/11 (1).webp" alt="APP 畫面設計" onerror="this.style.display='none'" />
-          <p class="screen-caption">APP 畫面設計</p>
-        </div>
-        <div class="screen-item">
-          <img src="./pic/11 (3).webp" alt="Prototype 設計" onerror="this.style.display='none'" />
-          <p class="screen-caption">Prototype 設計</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- 07 OUTCOME -->
-    <div class="section">
-      <p class="section-num">07 — Outcome & Reflection</p>
-      <h2 class="section-title">成果與反思</h2>
-      <div class="outcome-stats">
-        <div class="stat-item">
-          <div class="stat-num">1</div>
-          <div class="stat-label">條主要流程<br>讓點餐路徑清晰不分心</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-num">3</div>
-          <div class="stat-label">個核心痛點<br>全部由設計回應</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-num">完整</div>
-          <div class="stat-label">從 User Flow 到<br>Prototype 的完整交付</div>
-        </div>
-      </div>
-      <div class="decision-box" style="border-left-color: var(--border);">
-        這個專案最特別的地方，是設計的起點來自真實的工作經驗而非假設。曾經在一風堂服務的那段時間，讓我對服務流程的每個細節有深刻的理解——哪些步驟浪費了員工的時間、哪些環節讓顧客感到挫折。<br><br>
-        <strong>如果繼續發展這個專案</strong>，我會加入外送流程的設計，以及針對服務員端的後台介面——讓點餐系統真正串聯前後場，而不只是解決顧客端的問題。
-      </div>
-    </div>
-
-    <footer>
-    </footer>
-
-  </div>
-
-  <script>
-    const cursor = document.getElementById('cursor');
-    if (cursor) { document.addEventListener('mousemove', e => {
-      cursor.style.left = e.clientX + 'px';
-      cursor.style.top  = e.clientY + 'px';
-    }); }
-    const hamburger  = document.getElementById('nav-hamburger');
-    const navDrawer  = document.getElementById('nav-links');
-    const navOverlay = document.getElementById('nav-overlay');
-    function openMenu() { hamburger.classList.add('is-open'); navDrawer.classList.add('is-open'); navOverlay.classList.add('is-open'); hamburger.setAttribute('aria-expanded', 'true'); document.body.style.overflow = 'hidden'; }
-    function closeMenu() { hamburger.classList.remove('is-open'); navDrawer.classList.remove('is-open'); navOverlay.classList.remove('is-open'); hamburger.setAttribute('aria-expanded', 'false'); document.body.style.overflow = ''; }
-    hamburger.addEventListener('click', () => hamburger.classList.contains('is-open') ? closeMenu() : openMenu());
-    navOverlay.addEventListener('click', closeMenu);
-    navDrawer.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMenu));
-  </script>
-</body>
+    <script>
+      const cursor = document.getElementById("cursor");
+      if (cursor) {
+        document.addEventListener("mousemove", (e) => {
+          cursor.style.left = e.clientX + "px";
+          cursor.style.top = e.clientY + "px";
+        });
+      }
+      const hamburger = document.getElementById("nav-hamburger");
+      const navDrawer = document.getElementById("nav-links");
+      const navOverlay = document.getElementById("nav-overlay");
+      function openMenu() {
+        hamburger.classList.add("is-open");
+        navDrawer.classList.add("is-open");
+        navOverlay.classList.add("is-open");
+        hamburger.setAttribute("aria-expanded", "true");
+        document.body.style.overflow = "hidden";
+      }
+      function closeMenu() {
+        hamburger.classList.remove("is-open");
+        navDrawer.classList.remove("is-open");
+        navOverlay.classList.remove("is-open");
+        hamburger.setAttribute("aria-expanded", "false");
+        document.body.style.overflow = "";
+      }
+      hamburger.addEventListener("click", () =>
+        hamburger.classList.contains("is-open") ? closeMenu() : openMenu(),
+      );
+      navOverlay.addEventListener("click", closeMenu);
+      navDrawer
+        .querySelectorAll("a")
+        .forEach((a) => a.addEventListener("click", closeMenu));
+    </script>
+  </body>
 </html>

@@ -1,703 +1,1031 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-TW">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>WEB - SETTAL</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Noto+Sans+TC:wght@300;400;500&family=Tenor+Sans&display=swap" rel="stylesheet">
-  <link href="https://fonts.cdnfonts.com/css/broadway" rel="stylesheet">
-  <style>
-    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WEB - SETTAL</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Noto+Sans+TC:wght@300;400;500&family=Tenor+Sans&display=swap"
+      rel="stylesheet"
+    />
+    <link href="https://fonts.cdnfonts.com/css/broadway" rel="stylesheet" />
+    <style>
+      *,
+      *::before,
+      *::after {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
 
-    :root {
-      --font-menu: 'Amarna Light', 'Nirmala UI', sans-serif;
-      --font-zh: 'Noto Sans TC', 'Nirmala UI', sans-serif;
-      --font-serif: 'Cormorant Garamond', serif;
-      --bg: #F1F2F4;
-      --bg2: #E8E9EC;
-      --border: rgba(0,0,0,0.09);
-      --text: #1a1a1a;
-      --text-muted: #444444;
-      --text-light: #444444;
-      --accent: #2D5A40;
-      --accent-light: #4a7c5f;
-      --nav-fg: #1a1a1a;
-    }
+      :root {
+        --font-menu: "Amarna Light", "Nirmala UI", sans-serif;
+        --font-zh: "Noto Sans TC", "Nirmala UI", sans-serif;
+        --font-serif: "Cormorant Garamond", serif;
+        --bg: #f1f2f4;
+        --bg2: #e8e9ec;
+        --border: rgba(0, 0, 0, 0.09);
+        --text: #1a1a1a;
+        --text-muted: #444444;
+        --text-light: #444444;
+        --accent: #2d5a40;
+        --accent-light: #4a7c5f;
+        --nav-fg: #1a1a1a;
+      }
 
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--font-zh);
-      font-weight: 300;
-      line-height: 1.8;
-      -webkit-font-smoothing: antialiased;
-    }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--font-zh);
+        font-weight: 300;
+        line-height: 1.8;
+        -webkit-font-smoothing: antialiased;
+      }
 
-    @media (hover: hover) and (pointer: fine) {
-      body { }
-    @media (hover: hover) and (pointer: fine) { body { } }
-    @media (hover: none), (pointer: coarse) { #cursor { display: none; } }
-    }
-    @media (hover: none), (pointer: coarse) {
-      #cursor { display: none; }
-    }
+      @media (hover: hover) and (pointer: fine) {
+        body {
+        }
+        @media (hover: hover) and (pointer: fine) {
+          body {
+          }
+        }
+        @media (hover: none), (pointer: coarse) {
+          #cursor {
+            display: none;
+          }
+        }
+      }
+      @media (hover: none), (pointer: coarse) {
+        #cursor {
+          display: none;
+        }
+      }
 
-    /* ── CURSOR ── */
-    #cursor {
-      position: fixed;
-      width: 36px; height: 36px;
-      border-radius: 50%;
-      pointer-events: none;
-      z-index: 9999;
-      top: 0; left: 0;
-      transform: translate(-50%, -50%);
-      background: rgba(30,30,30,0.06);
-      border: 1.5px solid rgba(30,30,30,0.5);
-    }
-    #cursor::after {
-      content: '';
-      position: absolute;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      background: #1a1a1a;
-    }
+      /* ── CURSOR ── */
+      #cursor {
+        position: fixed;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 9999;
+        top: 0;
+        left: 0;
+        transform: translate(-50%, -50%);
+        background: rgba(30, 30, 30, 0.06);
+        border: 1.5px solid rgba(30, 30, 30, 0.5);
+      }
+      #cursor::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #1a1a1a;
+      }
 
-    /* ── NAV ── */
-    #nav {
-      position: fixed;
-      top: 40px; left: 0; right: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: clamp(24px,4vw,32px) clamp(24px,4vw,56px);
-      gap: clamp(24px,6vw,85px);
-      z-index: 200;
-      --nav-fg: #1a1a1a;
-      background: rgba(249,248,246,0.25);
-      backdrop-filter: blur(5px);
-      -webkit-backdrop-filter: blur(5px);
-    }
-    .nav-links {
-      display: flex;
-      align-items: center;
-      gap: clamp(16px,2.2vw,32px);
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-    #nav a {
-      font-family: var(--font-menu);
-      font-size: clamp(11px,1.1vw,16px);
-      font-weight: 400;
-      letter-spacing: 0.5em;
-      color: var(--nav-fg);
-      text-decoration: none;
-      text-transform: uppercase;
-      transition: color 0.4s ease, font-weight 0.2s ease;
-      padding: 10px;
-      position: relative;
-    }
-    #nav a:not(.contact)::after {
-      content: '';
-      position: absolute;
-      bottom: 4px; left: 10px; right: 10px;
-      height: 1.5px;
-      background: currentColor;
-      transform: scaleX(0);
-      transform-origin: left center;
-      transition: transform 0.3s ease, opacity 0.3s ease;
-      opacity: 0;
-    }
-    #nav a:not(.contact):hover { font-weight: 700; }
-    #nav a:not(.contact):hover::after { transform: scaleX(1); opacity: 1; }
-    #nav a:not(.contact).nav-active { font-weight: 700; }
-    #nav a:not(.contact).nav-active::after { transform: scaleX(1); opacity: 1; }
-    #nav a.contact {
-      background: #fff;
-      padding: 10px 22px;
-      border-radius: 999px;
-      font-weight: 700;
-      letter-spacing: 0.5em;
-      color: #222;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.10), 0 8px 18px rgba(0,0,0,0.08);
-      transition: background 0.28s, color 0.28s;
-    }
-    #nav a.contact:hover { background: #626262; color: #fff !important; }
+      /* ── NAV ── */
+      #nav {
+        position: fixed;
+        top: 40px;
+        left: 0;
+        right: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: clamp(24px, 4vw, 32px) clamp(24px, 4vw, 56px);
+        gap: clamp(24px, 6vw, 85px);
+        z-index: 200;
+        --nav-fg: #1a1a1a;
+        background: rgba(249, 248, 246, 0.25);
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
+      }
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: clamp(16px, 2.2vw, 32px);
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      #nav a {
+        font-family: var(--font-menu);
+        font-size: clamp(11px, 1.1vw, 16px);
+        font-weight: 400;
+        letter-spacing: 0.5em;
+        color: var(--nav-fg);
+        text-decoration: none;
+        text-transform: uppercase;
+        transition:
+          color 0.4s ease,
+          font-weight 0.2s ease;
+        padding: 10px;
+        position: relative;
+      }
+      #nav a:not(.contact)::after {
+        content: "";
+        position: absolute;
+        bottom: 4px;
+        left: 10px;
+        right: 10px;
+        height: 1.5px;
+        background: currentColor;
+        transform: scaleX(0);
+        transform-origin: left center;
+        transition:
+          transform 0.3s ease,
+          opacity 0.3s ease;
+        opacity: 0;
+      }
+      #nav a:not(.contact):hover {
+        font-weight: 700;
+      }
+      #nav a:not(.contact):hover::after {
+        transform: scaleX(1);
+        opacity: 1;
+      }
+      #nav a:not(.contact).nav-active {
+        font-weight: 700;
+      }
+      #nav a:not(.contact).nav-active::after {
+        transform: scaleX(1);
+        opacity: 1;
+      }
+      #nav a.contact {
+        background: #fff;
+        padding: 10px 22px;
+        border-radius: 999px;
+        font-weight: 700;
+        letter-spacing: 0.5em;
+        color: #222;
+        box-shadow:
+          0 2px 6px rgba(0, 0, 0, 0.1),
+          0 8px 18px rgba(0, 0, 0, 0.08);
+        transition:
+          background 0.28s,
+          color 0.28s;
+      }
+      #nav a.contact:hover {
+        background: #626262;
+        color: #fff !important;
+      }
 
-    /* Hamburger */
-    .nav-hamburger {
-      display: none;
-      flex-direction: column;
-      justify-content: center;
-      gap: 5px;
-      background: none; border: none;
-      cursor: pointer; padding: 6px; z-index: 401;
-    }
-    .nav-hamburger span {
-      display: block; width: 22px; height: 1.5px;
-      background: var(--nav-fg, #1a1a1a);
-      border-radius: 2px;
-      transition: transform 0.3s ease, opacity 0.3s ease;
-      transform-origin: center;
-    }
-    .nav-hamburger.is-open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
-    .nav-hamburger.is-open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
-    .nav-hamburger.is-open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
-    .nav-overlay {
-      display: none; position: fixed; inset: 0;
-      background: rgba(0,0,0,0.4); z-index: 350;
-      opacity: 0; transition: opacity 0.3s ease;
-    }
-    .nav-overlay.is-open { opacity: 1; }
+      /* Hamburger */
+      .nav-hamburger {
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        gap: 5px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 6px;
+        z-index: 401;
+      }
+      .nav-hamburger span {
+        display: block;
+        width: 22px;
+        height: 1.5px;
+        background: var(--nav-fg, #1a1a1a);
+        border-radius: 2px;
+        transition:
+          transform 0.3s ease,
+          opacity 0.3s ease;
+        transform-origin: center;
+      }
+      .nav-hamburger.is-open span:nth-child(1) {
+        transform: translateY(6.5px) rotate(45deg);
+      }
+      .nav-hamburger.is-open span:nth-child(2) {
+        opacity: 0;
+        transform: scaleX(0);
+      }
+      .nav-hamburger.is-open span:nth-child(3) {
+        transform: translateY(-6.5px) rotate(-45deg);
+      }
+      .nav-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.4);
+        z-index: 350;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+      .nav-overlay.is-open {
+        opacity: 1;
+      }
 
-    @media (max-width: 768px) {
-      body { cursor: auto; }
-      #cursor { display: none; }
-      #nav { top: 0; padding: 14px 20px; flex-direction: row; justify-content: space-between; background: rgba(249,248,246,0.25); backdrop-filter: blur(5px); }
-      .nav-hamburger { display: flex; }
-      .nav-overlay { display: block; pointer-events: none; }
-      .nav-overlay.is-open { pointer-events: auto; }
-      .nav-links { position: fixed; top: 0; right: -100%; width: min(72vw,280px); height: 100dvh; background: rgba(241,242,244,0.98); backdrop-filter: blur(20px); flex-direction: column; align-items: flex-start; justify-content: center; gap: 6px; padding: 80px 36px 60px; z-index: 400; transition: right 0.38s cubic-bezier(0.4,0,0.2,1); }
-      .nav-links.is-open { right: 0; }
-      .nav-links a { font-size: 11px !important; letter-spacing: 0.32em; padding: 12px 0 !important; color: #1a1a1a !important; border-bottom: 1px solid rgba(0,0,0,0.08); width: 100%; }
-      #nav-contact { background: transparent !important; border: 1px solid rgba(0,0,0,0.3) !important; border-radius: 24px !important; padding: 10px 18px !important; color: #1a1a1a !important; box-shadow: none !important; margin-top: 20px; align-self: flex-start; }
-    }
+      @media (max-width: 768px) {
+        body {
+          cursor: auto;
+        }
+        #cursor {
+          display: none;
+        }
+        #nav {
+          top: 0;
+          padding: 14px 20px;
+          flex-direction: row;
+          justify-content: space-between;
+          background: rgba(249, 248, 246, 0.25);
+          backdrop-filter: blur(5px);
+        }
+        .nav-hamburger {
+          display: flex;
+        }
+        .nav-overlay {
+          display: block;
+          pointer-events: none;
+        }
+        .nav-overlay.is-open {
+          pointer-events: auto;
+        }
+        .nav-links {
+          position: fixed;
+          top: 0;
+          right: -100%;
+          width: min(72vw, 280px);
+          height: 100dvh;
+          background: rgba(241, 242, 244, 0.98);
+          backdrop-filter: blur(20px);
+          flex-direction: column;
+          align-items: flex-start;
+          justify-content: center;
+          gap: 6px;
+          padding: 80px 36px 60px;
+          z-index: 400;
+          transition: right 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .nav-links.is-open {
+          right: 0;
+        }
+        .nav-links a {
+          font-size: 11px !important;
+          letter-spacing: 0.32em;
+          padding: 12px 0 !important;
+          color: #1a1a1a !important;
+          border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+          width: 100%;
+        }
+        #nav-contact {
+          background: transparent !important;
+          border: 1px solid rgba(0, 0, 0, 0.3) !important;
+          border-radius: 24px !important;
+          padding: 10px 18px !important;
+          color: #1a1a1a !important;
+          box-shadow: none !important;
+          margin-top: 20px;
+          align-self: flex-start;
+        }
+      }
 
-    /* ── LAYOUT ── */
-    .page-wrap { padding-top: clamp(80px, 12vw, 300px); }
-    @media (max-width: 768px) { .page-wrap { padding-top: 100px; } }
-    /* ── HERO ── */
-    .hero {
-      max-width: 980px; margin: 0 auto;
-      padding: 0 clamp(24px,5vw,64px) 80px;
-    }
-    .hero-eyebrow {
-      font-family: var(--font-menu);
-      font-size: clamp(9px,0.9vw,11px);
-      letter-spacing: 0.4em; text-transform: uppercase;
-      color: var(--text-light); margin-bottom: 28px;
-    }
-    .hero-title {
-      font-family: 'Broadway', var(--font-menu);
-      font-size: clamp(52px,8vw,120px);
-      font-weight: 400; letter-spacing: 0.05em;
-      color: var(--text); line-height: 1;
-      margin-bottom: 32px;
-    }
-    .hero-title span { color: var(--accent); }
-    .hero-sub {
-      font-size: clamp(14px,1.2vw,17px);
-      color: var(--text-muted); max-width: 560px;
-      line-height: 2; margin-bottom: 48px; font-weight: 300;
-    }
-    .hero-meta {
-      display: flex; gap: clamp(24px,4vw,56px); flex-wrap: wrap;
-      padding-top: 32px; border-top: 1px solid var(--border);
-    }
-    .hero-meta-label {
-      font-family: var(--font-menu); font-size: 12px;
-      letter-spacing: 0.3em; text-transform: uppercase;
-      color: var(--text-light); margin-bottom: 6px;
-    }
-    .hero-meta-value { font-size: 13px; color: var(--text); letter-spacing: 0.05em; }
+      /* ── LAYOUT ── */
+      .page-wrap {
+        padding-top: clamp(80px, 12vw, 300px);
+      }
+      @media (max-width: 768px) {
+        .page-wrap {
+          padding-top: 100px;
+        }
+      }
+      /* ── HERO ── */
+      .hero {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 0 clamp(24px, 5vw, 64px) 80px;
+      }
+      .hero-eyebrow {
+        font-family: var(--font-menu);
+        font-size: clamp(9px, 0.9vw, 11px);
+        letter-spacing: 0.4em;
+        text-transform: uppercase;
+        color: var(--text-light);
+        margin-bottom: 28px;
+      }
+      .hero-title {
+        font-family: "Broadway", var(--font-menu);
+        font-size: clamp(52px, 8vw, 120px);
+        font-weight: 400;
+        letter-spacing: 0.05em;
+        color: var(--text);
+        line-height: 1;
+        margin-bottom: 32px;
+      }
+      .hero-title span {
+        color: var(--accent);
+      }
+      .hero-sub {
+        font-size: clamp(14px, 1.2vw, 17px);
+        color: var(--text-muted);
+        max-width: 560px;
+        line-height: 2;
+        margin-bottom: 48px;
+        font-weight: 300;
+      }
+      .hero-meta {
+        display: flex;
+        gap: clamp(24px, 4vw, 56px);
+        flex-wrap: wrap;
+        padding-top: 32px;
+        border-top: 1px solid var(--border);
+      }
+      .hero-meta-label {
+        font-family: var(--font-menu);
+        font-size: 12px;
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        color: var(--text-light);
+        margin-bottom: 6px;
+      }
+      .hero-meta-value {
+        font-size: 13px;
+        color: var(--text);
+        letter-spacing: 0.05em;
+      }
 
-    /* ── HERO IMAGE ── */
-    .hero-image {
-      width: 100%; max-height: 600px; overflow: hidden;
-      border-bottom: 1px solid var(--border);
-    }
-    .hero-image img { width: 100%; object-fit: cover; object-position: top; display: block; }
+      /* ── HERO IMAGE ── */
+      .hero-image {
+        width: 100%;
+        max-height: 600px;
+        overflow: hidden;
+        border-bottom: 1px solid var(--border);
+      }
+      .hero-image img {
+        width: 100%;
+        object-fit: cover;
+        object-position: top;
+        display: block;
+      }
 
-    /* ── SECTION ── */
-    .section {
-      max-width: 980px; margin: 0 auto;
-      padding: clamp(56px,7vw,96px) clamp(24px,5vw,64px);
-      border-bottom: 1px solid var(--border);
-    }
-    .section-num {
-      font-family: var(--font-menu); font-size: 12px;
-      letter-spacing: 0.4em; text-transform: uppercase;
-      color: var(--accent); margin-bottom: 16px;
-    }
-    .section-title {
-      font-family: var(--font-serif);
-      font-size: clamp(28px,3.5vw,48px);
-      font-weight: 300; letter-spacing: 0.06em;
-      color: var(--text); margin-bottom: 40px; line-height: 1.2;
-    }
+      /* ── SECTION ── */
+      .section {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: clamp(56px, 7vw, 96px) clamp(24px, 5vw, 64px);
+        border-bottom: 1px solid var(--border);
+      }
+      .section-num {
+        font-family: var(--font-menu);
+        font-size: 12px;
+        letter-spacing: 0.4em;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin-bottom: 16px;
+      }
+      .section-title {
+        font-family: var(--font-serif);
+        font-size: clamp(28px, 3.5vw, 48px);
+        font-weight: 300;
+        letter-spacing: 0.06em;
+        color: var(--text);
+        margin-bottom: 40px;
+        line-height: 1.2;
+      }
 
-    /* ── CONTEXT GRID ── */
-    .context-grid {
-      display: grid; grid-template-columns: 1fr 1fr;
-      gap: clamp(24px,4vw,56px);
-    }
-    .context-block h3 {
-      font-family: var(--font-menu); font-size: 14px;
-      letter-spacing: 0.3em; text-transform: uppercase;
-      color: var(--text-light); margin-bottom: 14px;
-    }
-    .context-block p { font-size: 14px; color: var(--text-muted); line-height: 2; }
+      /* ── CONTEXT GRID ── */
+      .context-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: clamp(24px, 4vw, 56px);
+      }
+      .context-block h3 {
+        font-family: var(--font-menu);
+        font-size: 14px;
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        color: var(--text-light);
+        margin-bottom: 14px;
+      }
+      .context-block p {
+        font-size: 14px;
+        color: var(--text-muted);
+        line-height: 2;
+      }
 
-    /* ── PERSONA CARDS ── */
-    .persona-grid {
-      display: grid; grid-template-columns: 1fr 1fr;
-      gap: clamp(16px,2vw,24px);
-    }
-    .persona-card {
-      background: #fff; border: 1px solid var(--border);
-      padding: clamp(24px,3vw,36px);
-    }
-    .persona-tag {
-      display: inline-block;
-      font-family: var(--font-menu); font-size: 12px;
-      letter-spacing: 0.3em; text-transform: uppercase;
-      color: #fff; background: var(--accent);
-      padding: 4px 12px; margin-bottom: 20px;
-    }
-    .persona-quote {
-      font-family: var(--font-serif);
-      font-size: clamp(16px,1.8vw,22px);
-      font-weight: 300; font-style: italic;
-      color: var(--accent); line-height: 1.5;
-      margin-bottom: 24px; padding-bottom: 20px;
-      border-bottom: 1px solid var(--border);
-    }
-    .persona-row {
-      display: grid; grid-template-columns: 1fr 1fr;
-      gap: 16px; margin-top: 16px;
-    }
-    .persona-col h4 {
-      font-family: var(--font-menu); font-size: 12px;
-      letter-spacing: 0.25em; text-transform: uppercase;
-      color: var(--text-light); margin-bottom: 10px;
-    }
-    .persona-col ul { list-style: none; }
-    .persona-col ul li {
-      font-size: 12px; color: var(--text-muted);
-      line-height: 1.8; padding-left: 12px; position: relative;
-    }
-    .persona-col ul li::before {
-      content: '·'; position: absolute; left: 0;
-      color: var(--accent);
-    }
+      /* ── PERSONA CARDS ── */
+      .persona-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: clamp(16px, 2vw, 24px);
+      }
+      .persona-card {
+        background: #fff;
+        border: 1px solid var(--border);
+        padding: clamp(24px, 3vw, 36px);
+      }
+      .persona-tag {
+        display: inline-block;
+        font-family: var(--font-menu);
+        font-size: 12px;
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        color: #fff;
+        background: var(--accent);
+        padding: 4px 12px;
+        margin-bottom: 20px;
+      }
+      .persona-quote {
+        font-family: var(--font-serif);
+        font-size: clamp(16px, 1.8vw, 22px);
+        font-weight: 300;
+        font-style: italic;
+        color: var(--accent);
+        line-height: 1.5;
+        margin-bottom: 24px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid var(--border);
+      }
+      .persona-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-top: 16px;
+      }
+      .persona-col h4 {
+        font-family: var(--font-menu);
+        font-size: 12px;
+        letter-spacing: 0.25em;
+        text-transform: uppercase;
+        color: var(--text-light);
+        margin-bottom: 10px;
+      }
+      .persona-col ul {
+        list-style: none;
+      }
+      .persona-col ul li {
+        font-size: 12px;
+        color: var(--text-muted);
+        line-height: 1.8;
+        padding-left: 12px;
+        position: relative;
+      }
+      .persona-col ul li::before {
+        content: "·";
+        position: absolute;
+        left: 0;
+        color: var(--accent);
+      }
 
-    /* ── USER JOURNEY ── */
-    .journey-img {
-      width: 100%; border: 1px solid var(--border);
-      display: block; margin-bottom: 24px;
-    }
-    .journey-insight {
-      background: var(--accent);
-      padding: 24px 28px;
-      display: grid; grid-template-columns: auto 1fr;
-      gap: 20px; align-items: start;
-    }
-    .insight-label {
-      font-family: var(--font-menu); font-size: 12px;
-      letter-spacing: 0.3em; text-transform: uppercase;
-      color: rgba(255,255,255,0.6); white-space: nowrap;
-      padding-top: 2px;
-    }
-    .insight-text {
-      font-size: 14px; color: #fff; line-height: 1.9;
-    }
-    .insight-text strong { font-weight: 500; }
+      /* ── USER JOURNEY ── */
+      .journey-img {
+        width: 100%;
+        border: 1px solid var(--border);
+        display: block;
+        margin-bottom: 24px;
+      }
+      .journey-insight {
+        background: var(--accent);
+        padding: 24px 28px;
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 20px;
+        align-items: start;
+      }
+      .insight-label {
+        font-family: var(--font-menu);
+        font-size: 12px;
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.6);
+        white-space: nowrap;
+        padding-top: 2px;
+      }
+      .insight-text {
+        font-size: 14px;
+        color: #fff;
+        line-height: 1.9;
+      }
+      .insight-text strong {
+        font-weight: 500;
+      }
 
-    /* ── SITE MAP ── */
-    .sitemap-img {
-      width: 100%; border: 1px solid var(--border); display: block;
-    }
+      /* ── SITE MAP ── */
+      .sitemap-img {
+        width: 100%;
+        border: 1px solid var(--border);
+        display: block;
+      }
 
-    /* ── DESIGN DECISIONS ── */
-    .design-grid {
-      display: grid; grid-template-columns: 1fr 1fr;
-      gap: 1px; background: var(--border);
-      border: 1px solid var(--border);
-    }
-    .design-item {
-      background: var(--bg); padding: clamp(24px,3vw,40px);
-    }
-    .design-num {
-      font-family: var(--font-menu); font-size: 12px;
-      letter-spacing: 0.35em; color: var(--text-light); margin-bottom: 12px;
-    }
-    .design-name {
-      font-size: 16px; font-weight: 500; color: var(--text);
-      margin-bottom: 10px; letter-spacing: 0.03em;
-    }
-    .design-desc { font-size: 13px; color: var(--text-muted); line-height: 1.9; }
-    .color-swatches {
-      display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap;
-    }
-    .swatch {
-      display: flex; flex-direction: column; align-items: center; gap: 6px;
-    }
-    .swatch-color {
-      width: 40px; height: 40px; border-radius: 2px;
-      border: 1px solid var(--border);
-    }
-    .swatch-label { font-size: 14px; color: var(--text-light); letter-spacing: 0.05em; }
+      /* ── DESIGN DECISIONS ── */
+      .design-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1px;
+        background: var(--border);
+        border: 1px solid var(--border);
+      }
+      .design-item {
+        background: var(--bg);
+        padding: clamp(24px, 3vw, 40px);
+      }
+      .design-num {
+        font-family: var(--font-menu);
+        font-size: 12px;
+        letter-spacing: 0.35em;
+        color: var(--text-light);
+        margin-bottom: 12px;
+      }
+      .design-name {
+        font-size: 16px;
+        font-weight: 500;
+        color: var(--text);
+        margin-bottom: 10px;
+        letter-spacing: 0.03em;
+      }
+      .design-desc {
+        font-size: 13px;
+        color: var(--text-muted);
+        line-height: 1.9;
+      }
+      .color-swatches {
+        display: flex;
+        gap: 10px;
+        margin-top: 16px;
+        flex-wrap: wrap;
+      }
+      .swatch {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+      }
+      .swatch-color {
+        width: 40px;
+        height: 40px;
+        border-radius: 2px;
+        border: 1px solid var(--border);
+      }
+      .swatch-label {
+        font-size: 14px;
+        color: var(--text-light);
+        letter-spacing: 0.05em;
+      }
 
-    /* ── SCREENS ── */
-    .screens-grid {
-      display: grid; grid-template-columns: 1fr 1fr;
-      gap: clamp(12px,2vw,20px);
-    }
-    .screen-item { position: relative; }
-    .screen-item img {
-      width: 100%; display: block;
-      border: 1px solid var(--border);
-    }
-    .screen-caption {
-      font-family: var(--font-menu); font-size: 14px;
-      letter-spacing: 0.2em; text-transform: uppercase;
-      color: var(--text-light); margin-top: 8px;
-    }
+      /* ── SCREENS ── */
+      .screens-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: clamp(12px, 2vw, 20px);
+      }
+      .screen-item {
+        position: relative;
+      }
+      .screen-item img {
+        width: 100%;
+        display: block;
+        border: 1px solid var(--border);
+      }
+      .screen-caption {
+        font-family: var(--font-menu);
+        font-size: 14px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--text-light);
+        margin-top: 8px;
+      }
 
-    /* ── OUTCOME ── */
-    .outcome-stats {
-      display: grid; grid-template-columns: repeat(3,1fr);
-      gap: 1px; background: var(--border);
-      border: 1px solid var(--border); margin-bottom: 32px;
-    }
-    .stat-item { background: var(--bg); padding: clamp(24px,3vw,40px); }
-    .stat-num {
-      font-family: var(--font-serif);
-      font-size: clamp(36px,5vw,64px);
-      font-weight: 300; color: var(--accent);
-      line-height: 1; margin-bottom: 8px;
-    }
-    .stat-label { font-size: 12px; color: var(--text-muted); line-height: 1.7; }
-    .outcome-reflection {
-      background: var(--bg2); border-left: 2px solid var(--accent);
-      padding: 24px 28px; font-size: 14px;
-      color: var(--text-muted); line-height: 2;
-    }
-    .outcome-reflection strong { color: var(--text); font-weight: 500; }
+      /* ── OUTCOME ── */
+      .outcome-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1px;
+        background: var(--border);
+        border: 1px solid var(--border);
+        margin-bottom: 32px;
+      }
+      .stat-item {
+        background: var(--bg);
+        padding: clamp(24px, 3vw, 40px);
+      }
+      .stat-num {
+        font-family: var(--font-serif);
+        font-size: clamp(36px, 5vw, 64px);
+        font-weight: 300;
+        color: var(--accent);
+        line-height: 1;
+        margin-bottom: 8px;
+      }
+      .stat-label {
+        font-size: 12px;
+        color: var(--text-muted);
+        line-height: 1.7;
+      }
+      .outcome-reflection {
+        background: var(--bg2);
+        border-left: 2px solid var(--accent);
+        padding: 24px 28px;
+        font-size: 14px;
+        color: var(--text-muted);
+        line-height: 2;
+      }
+      .outcome-reflection strong {
+        color: var(--text);
+        font-weight: 500;
+      }
 
-    /* ── FOOTER ── */
-    footer {
-      max-width: 980px; margin: 0 auto;
-      padding: clamp(40px,5vw,64px) clamp(24px,5vw,64px);
-      display: flex; justify-content: space-between;
-      align-items: center; flex-wrap: wrap; gap: 16px;
-    }
-    .footer-back {
-      font-family: var(--font-menu); font-size: 14px;
-      letter-spacing: 0.35em; text-transform: uppercase;
-      color: var(--text-muted); text-decoration: none;
-      transition: color 0.2s;
-    }
-    .footer-back:hover { color: var(--accent); }
-    .footer-credit {
-      font-family: var(--font-menu); font-size: 14px;
-      letter-spacing: 0.2em; color: var(--text-light);
-    }
+      /* ── FOOTER ── */
+      footer {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: clamp(40px, 5vw, 64px) clamp(24px, 5vw, 64px);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+      }
+      .footer-back {
+        font-family: var(--font-menu);
+        font-size: 14px;
+        letter-spacing: 0.35em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        text-decoration: none;
+        transition: color 0.2s;
+      }
+      .footer-back:hover {
+        color: var(--accent);
+      }
+      .footer-credit {
+        font-family: var(--font-menu);
+        font-size: 14px;
+        letter-spacing: 0.2em;
+        color: var(--text-light);
+      }
 
-    /* ── RESPONSIVE ── */
-    @media (max-width: 700px) {
-      .context-grid, .persona-grid, .design-grid, .screens-grid { grid-template-columns: 1fr; }
-      .persona-row { grid-template-columns: 1fr; }
-      .outcome-stats { grid-template-columns: 1fr; }
-      .journey-insight { grid-template-columns: 1fr; gap: 8px; }
-    }
+      /* ── RESPONSIVE ── */
+      @media (max-width: 700px) {
+        .context-grid,
+        .persona-grid,
+        .design-grid,
+        .screens-grid {
+          grid-template-columns: 1fr;
+        }
+        .persona-row {
+          grid-template-columns: 1fr;
+        }
+        .outcome-stats {
+          grid-template-columns: 1fr;
+        }
+        .journey-insight {
+          grid-template-columns: 1fr;
+          gap: 8px;
+        }
+      }
 
-    @media (max-width: 768px) {
-      .page-wrap { padding-top: 100px; }
-      .hero { padding-bottom: 48px; }
-    }
-  </style>
-</head>
-<body>
+      @media (max-width: 768px) {
+        .page-wrap {
+          padding-top: 100px;
+        }
+        .hero {
+          padding-bottom: 48px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="cursor"></div>
 
-  <div id="cursor"></div>
-
-  <nav id="nav">
-    <button class="nav-hamburger" id="nav-hamburger" aria-label="開啟選單" aria-expanded="false">
-      <span></span><span></span><span></span>
-    </button>
-    <div class="nav-overlay" id="nav-overlay"></div>
-    <div class="nav-links" id="nav-links">
-      <a href="./index.html">HOME</a>
-      <a href="./ui.html" >MOBILE</a>
-      <a href="./web.html"class="nav-active">WEB</a>
-      <a href="./ill.html">ILLUSTRATION</a>
-      <a href="./photography.html">PHOTOGRAPHY</a>
-    </div>
-    <a href="./contact.html" class="contact" id="nav-contact">CONTACT</a>
-  </nav>
-
-  <div class="page-wrap">
-
-    <!-- HERO -->
-    <div class="hero">
-      <p class="hero-sub">
-        市集媒合平台，連結想擺攤的攤主與舉辦市集的主辦方。解決攤主找不到市集資訊、報名流程不透明、主辦方難以管理報名的多重痛點。
-      </p>
-      <div class="hero-meta">
-        <div>
-          <div class="hero-meta-label">Role</div>
-          <div class="hero-meta-value">主視覺設計師</div>
-        </div>
-        <div>
-          <div class="hero-meta-label">Team</div>
-          <div class="hero-meta-value">4 人團隊</div>
-        </div>
-        <div>
-          <div class="hero-meta-label">Timeline</div>
-          <div class="hero-meta-value">2 週</div>
-        </div>
-        <div>
-          <div class="hero-meta-label">Context</div>
-          <div class="hero-meta-value">Unblock 獨角獸設計師競賽</div>
-        </div>
-        <div>
-          <div class="hero-meta-label">Tools</div>
-          <div class="hero-meta-value">Figma</div>
-        </div>
+    <nav id="nav">
+      <button
+        class="nav-hamburger"
+        id="nav-hamburger"
+        aria-label="開啟選單"
+        aria-expanded="false"
+      >
+        <span></span><span></span><span></span>
+      </button>
+      <div class="nav-overlay" id="nav-overlay"></div>
+      <div class="nav-links" id="nav-links">
+        <a href="./index.html">HOME</a>
+        <a href="./ui.html">MOBILE</a>
+        <a href="./web.html" class="nav-active">WEB</a>
+        <a href="./ill.html">ILLUSTRATION</a>
+        <a href="./photography.html">PHOTOGRAPHY</a>
       </div>
-    </div>
+      <a href="./contact.html" class="contact" id="nav-contact">CONTACT</a>
+    </nav>
 
-    <!-- HERO IMAGE -->
-    <div class="hero-image">
-    </div>
-
-    <!-- 01 BACKGROUND -->
-    <div class="section">
-      <p class="section-num">01 — Background</p>
-      <h2 class="section-title">專案背景</h2>
-      <div class="context-grid">
-        <div class="context-block">
-          <h3>The Problem</h3>
-          <p>台灣市集文化蓬勃，卻缺乏統一的資訊平台。想擺攤的人要花大量時間 follow 各個市集的 Instagram 或 Facebook，往往錯過報名時間；主辦方則要手動處理大量報名訊息，效率低落。</p>
-        </div>
-        <div class="context-block">
-          <h3>Our Solution</h3>
-          <p>打造一個市集媒合平台 SETALL，讓攤主可以集中瀏覽、收藏、報名市集，並即時掌握錄取狀態；讓主辦方能夠一站式管理報名、公告資訊、與攤主溝通。</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- 02 RESEARCH -->
-    <div class="section">
-      <p class="section-num">02 — User Research</p>
-      <h2 class="section-title">使用者研究</h2>
-      <div class="persona-grid">
-
-        <div class="persona-card">
-          <span class="persona-tag">Persona 01</span>
-          <p class="persona-quote">「厭倦目前的工作，嚮往著自己創業，但先以兼職擺攤作為開始的新手攤主」</p>
-          <div class="persona-row">
-            <div class="persona-col">
-              <h4>痛點</h4>
-              <ul>
-                <li>不清楚哪裡有市集</li>
-                <li>不清楚需要什麼資料</li>
-                <li>不清楚擺攤位置</li>
-                <li>擔桌尺寸與想像不符</li>
-                <li>無法即時得知錄取狀態</li>
-              </ul>
-            </div>
-            <div class="persona-col">
-              <h4>目標</h4>
-              <ul>
-                <li>希望能即時掌握報名進度</li>
-                <li>希望能了解下個月附近的市集資訊</li>
-                <li>掌握準確地圖位置</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        <div class="persona-card">
-          <span class="persona-tag">Persona 02</span>
-          <p class="persona-quote">「從幕後的市集主辦到幕前的市集攤主，不論是經營品牌或是攤攤事務都瞭如指掌」</p>
-          <div class="persona-row">
-            <div class="persona-col">
-              <h4>痛點</h4>
-              <ul>
-                <li>需要攜帶 29吋行李</li>
-                <li>常因為鄰攤商品雷同影響銷售</li>
-                <li>希望事先了解鄰攤資訊</li>
-              </ul>
-            </div>
-            <div class="persona-col">
-              <h4>目標</h4>
-              <ul>
-                <li>事先了解左右攤位資訊</li>
-                <li>一站掌握品牌宣傳管道</li>
-                <li>提前規劃交通和住宿</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- 03 USER JOURNEY -->
-    <div class="section">
-      <p class="section-num">03 — User Journey</p>
-      <h2 class="section-title">使用者旅程</h2>
-      <img class="journey-img" src="./pic/9 (23).webp" alt="User Journey Map" onerror="this.style.display='none'" />
-      <div class="journey-insight">
-        <span class="insight-label">Key Insight</span>
-        <p class="insight-text">
-          「等待錄取／備貨」是整個旅程中體驗最低的階段——攤主報名後完全不知道自己是否錄取、主辦方也可能沒有主動通知。<br><br>
-          <strong>我們的設計回應：</strong>在攤主個人頁面加入「我的行程」功能，以即時狀態標籤（已錄取／審核中／未錄取／待報名）讓攤主不需要主動追問，隨時掌握每一筆報名的進度。
+    <div class="page-wrap">
+      <!-- HERO -->
+      <div class="hero">
+        <p class="hero-sub">
+          市集媒合平台，連結想擺攤的攤主與舉辦市集的主辦方。解決攤主找不到市集資訊、報名流程不透明、主辦方難以管理報名的多重痛點。
         </p>
-      </div>
-    </div>
-
-    <!-- 04 SITE MAP -->
-    <div class="section">
-      <p class="section-num">04 — Information Architecture</p>
-      <h2 class="section-title">資訊架構</h2>
-      <img class="sitemap-img" src="./pic/9 (25).webp" alt="Site Map" onerror="this.style.display='none'" />
-    </div>
-
-    <!-- 05 DESIGN DECISIONS -->
-    <div class="section">
-      <p class="section-num">05 — Design Decisions</p>
-      <h2 class="section-title">設計決策</h2>
-      <div class="design-grid">
-
-        <div class="design-item">
-          <p class="design-num">決策 01</p>
-          <h3 class="design-name">品牌識別與 LOGO</h3>
-          <p class="design-desc">SETALL 的命名來自「Set All」——為所有人設置、媒合所有人。LOGO 設計以手寫感英文字體呈現品牌的親和力，並加入細微的市集意象，傳達平台輕鬆、社群感的調性。</p>
+        <div class="hero-meta">
+          <div>
+            <div class="hero-meta-label">Role</div>
+            <div class="hero-meta-value">主視覺設計師</div>
+          </div>
+          <div>
+            <div class="hero-meta-label">Team</div>
+            <div class="hero-meta-value">4 人團隊</div>
+          </div>
+          <div>
+            <div class="hero-meta-label">Timeline</div>
+            <div class="hero-meta-value">2 週</div>
+          </div>
+          <div>
+            <div class="hero-meta-label">Context</div>
+            <div class="hero-meta-value">Unblock 獨角獸設計師競賽</div>
+          </div>
+          <div>
+            <div class="hero-meta-label">Tools</div>
+            <div class="hero-meta-value">Figma</div>
+          </div>
         </div>
+      </div>
 
-        <div class="design-item">
-          <p class="design-num">決策 02</p>
-          <h3 class="design-name">色彩系統</h3>
-          <p class="design-desc">主色選用深森林綠，傳達市集戶外、自然、有機的氣息，同時展現平台的專業與可信度。米白色搭配淺綠作為輔助色，讓頁面保持清爽易讀。</p>
-          <div class="color-swatches">
-            <div class="swatch">
-              <div class="swatch-color" style="background:#1D5A3A"></div>
-              <span class="swatch-label">#1D5A3A</span>
+      <!-- HERO IMAGE -->
+      <div class="hero-image"></div>
+
+      <!-- 01 BACKGROUND -->
+      <div class="section">
+        <p class="section-num">01 — Background</p>
+        <h2 class="section-title">專案背景</h2>
+        <div class="context-grid">
+          <div class="context-block">
+            <h3>The Problem</h3>
+            <p>
+              台灣市集文化蓬勃，卻缺乏統一的資訊平台。想擺攤的人要花大量時間
+              follow 各個市集的 Instagram 或
+              Facebook，往往錯過報名時間；主辦方則要手動處理大量報名訊息，效率低落。
+            </p>
+          </div>
+          <div class="context-block">
+            <h3>Our Solution</h3>
+            <p>
+              打造一個市集媒合平台
+              SETALL，讓攤主可以集中瀏覽、收藏、報名市集，並即時掌握錄取狀態；讓主辦方能夠一站式管理報名、公告資訊、與攤主溝通。
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 02 RESEARCH -->
+      <div class="section">
+        <p class="section-num">02 — User Research</p>
+        <h2 class="section-title">使用者研究</h2>
+        <div class="persona-grid">
+          <div class="persona-card">
+            <span class="persona-tag">Persona 01</span>
+            <p class="persona-quote">
+              「厭倦目前的工作，嚮往著自己創業，但先以兼職擺攤作為開始的新手攤主」
+            </p>
+            <div class="persona-row">
+              <div class="persona-col">
+                <h4>痛點</h4>
+                <ul>
+                  <li>不清楚哪裡有市集</li>
+                  <li>不清楚需要什麼資料</li>
+                  <li>不清楚擺攤位置</li>
+                  <li>擔桌尺寸與想像不符</li>
+                  <li>無法即時得知錄取狀態</li>
+                </ul>
+              </div>
+              <div class="persona-col">
+                <h4>目標</h4>
+                <ul>
+                  <li>希望能即時掌握報名進度</li>
+                  <li>希望能了解下個月附近的市集資訊</li>
+                  <li>掌握準確地圖位置</li>
+                </ul>
+              </div>
             </div>
-            <div class="swatch">
-              <div class="swatch-color" style="background:#70946B"></div>
-              <span class="swatch-label">#70946B</span>
-            </div>
-            <div class="swatch">
-              <div class="swatch-color" style="background:#F5F0E8"></div>
-              <span class="swatch-label">#F5F0E8</span>
-            </div>
-            <div class="swatch">
-              <div class="swatch-color" style="background:#3D2B1F"></div>
-              <span class="swatch-label">#3D2B1F</span>
+          </div>
+
+          <div class="persona-card">
+            <span class="persona-tag">Persona 02</span>
+            <p class="persona-quote">
+              「從幕後的市集主辦到幕前的市集攤主，不論是經營品牌或是攤攤事務都瞭如指掌」
+            </p>
+            <div class="persona-row">
+              <div class="persona-col">
+                <h4>痛點</h4>
+                <ul>
+                  <li>需要攜帶 29吋行李</li>
+                  <li>常因為鄰攤商品雷同影響銷售</li>
+                  <li>希望事先了解鄰攤資訊</li>
+                </ul>
+              </div>
+              <div class="persona-col">
+                <h4>目標</h4>
+                <ul>
+                  <li>事先了解左右攤位資訊</li>
+                  <li>一站掌握品牌宣傳管道</li>
+                  <li>提前規劃交通和住宿</li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
-
-        <div class="design-item">
-          <p class="design-num">決策 03</p>
-          <h3 class="design-name">雙用戶角色設計</h3>
-          <p class="design-desc">平台同時服務攤主與主辦方兩種截然不同的用戶。設計上以同一套視覺語言，透過不同的導航入口（「新手入門」分為攤商／主辦）區分兩種角色的使用流程，避免混淆。</p>
-        </div>
-
-        <div class="design-item">
-          <p class="design-num">決策 04</p>
-          <h3 class="design-name">報名狀態透明化</h3>
-          <p class="design-desc">針對 User Journey 中的最大痛點，設計「我的行程」功能，用視覺化狀態標籤讓攤主即時掌握每一筆報名的進度。綠色代表已錄取，灰階代表審核中或未錄取，一目了然。</p>
-        </div>
-
       </div>
+
+      <!-- 03 USER JOURNEY -->
+      <div class="section">
+        <p class="section-num">03 — User Journey</p>
+        <h2 class="section-title">使用者旅程</h2>
+        <img
+          class="journey-img"
+          src="./pic/9 (23).webp"
+          alt="User Journey Map"
+          onerror="this.style.display = 'none'"
+        />
+        <div class="journey-insight">
+          <span class="insight-label">Key Insight</span>
+          <p class="insight-text">
+            「等待錄取／備貨」是整個旅程中體驗最低的階段——攤主報名後完全不知道自己是否錄取、主辦方也可能沒有主動通知。<br /><br />
+            <strong>我們的設計回應：</strong
+            >在攤主個人頁面加入「我的行程」功能，以即時狀態標籤（已錄取／審核中／未錄取／待報名）讓攤主不需要主動追問，隨時掌握每一筆報名的進度。
+          </p>
+        </div>
+      </div>
+
+      <!-- 04 SITE MAP -->
+      <div class="section">
+        <p class="section-num">04 — Information Architecture</p>
+        <h2 class="section-title">資訊架構</h2>
+        <img
+          class="sitemap-img"
+          src="./pic/9 (25).webp"
+          alt="Site Map"
+          onerror="this.style.display = 'none'"
+        />
+      </div>
+
+      <!-- 05 DESIGN DECISIONS -->
+      <div class="section">
+        <p class="section-num">05 — Design Decisions</p>
+        <h2 class="section-title">設計決策</h2>
+        <div class="design-grid">
+          <div class="design-item">
+            <p class="design-num">決策 01</p>
+            <h3 class="design-name">品牌識別與 LOGO</h3>
+            <p class="design-desc">
+              SETALL 的命名來自「Set All」——為所有人設置、媒合所有人。LOGO
+              設計以手寫感英文字體呈現品牌的親和力，並加入細微的市集意象，傳達平台輕鬆、社群感的調性。
+            </p>
+          </div>
+
+          <div class="design-item">
+            <p class="design-num">決策 02</p>
+            <h3 class="design-name">色彩系統</h3>
+            <p class="design-desc">
+              主色選用深森林綠，傳達市集戶外、自然、有機的氣息，同時展現平台的專業與可信度。米白色搭配淺綠作為輔助色，讓頁面保持清爽易讀。
+            </p>
+            <div class="color-swatches">
+              <div class="swatch">
+                <div class="swatch-color" style="background: #1d5a3a"></div>
+                <span class="swatch-label">#1D5A3A</span>
+              </div>
+              <div class="swatch">
+                <div class="swatch-color" style="background: #70946b"></div>
+                <span class="swatch-label">#70946B</span>
+              </div>
+              <div class="swatch">
+                <div class="swatch-color" style="background: #f5f0e8"></div>
+                <span class="swatch-label">#F5F0E8</span>
+              </div>
+              <div class="swatch">
+                <div class="swatch-color" style="background: #3d2b1f"></div>
+                <span class="swatch-label">#3D2B1F</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="design-item">
+            <p class="design-num">決策 03</p>
+            <h3 class="design-name">雙用戶角色設計</h3>
+            <p class="design-desc">
+              平台同時服務攤主與主辦方兩種截然不同的用戶。設計上以同一套視覺語言，透過不同的導航入口（「新手入門」分為攤商／主辦）區分兩種角色的使用流程，避免混淆。
+            </p>
+          </div>
+
+          <div class="design-item">
+            <p class="design-num">決策 04</p>
+            <h3 class="design-name">報名狀態透明化</h3>
+            <p class="design-desc">
+              針對 User Journey
+              中的最大痛點，設計「我的行程」功能，用視覺化狀態標籤讓攤主即時掌握每一筆報名的進度。綠色代表已錄取，灰階代表審核中或未錄取，一目了然。
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 06 SCREENS -->
+      <div class="section">
+        <p class="section-num">06 — Key Screens</p>
+        <h2 class="section-title">主要畫面</h2>
+        <div class="screens-grid">
+          <div class="screen-item">
+            <img
+              src="./pic/9 (9).webp"
+              alt="首頁"
+              onerror="this.style.display = 'none'"
+            />
+            <p class="screen-caption">首頁 — 熱門市集瀏覽</p>
+          </div>
+          <div class="screen-item">
+            <img
+              src="./pic/9 (5).webp"
+              alt="報名流程"
+              onerror="this.style.display = 'none'"
+            />
+            <p class="screen-caption">攤商報名 — 分步驟填寫</p>
+          </div>
+          <div class="screen-item">
+            <img
+              src="./pic/9 (12).webp"
+              alt="報名狀態"
+              onerror="this.style.display = 'none'"
+            />
+            <p class="screen-caption">我的行程 — 即時狀態追蹤</p>
+          </div>
+          <div class="screen-item">
+            <img
+              src="./pic/9 (10).webp"
+              alt="市集瀏覽"
+              onerror="this.style.display = 'none'"
+            />
+            <p class="screen-caption">市集瀏覽 — 篩選與搜尋</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 07 OUTCOME -->
+      <div class="section">
+        <p class="section-num">07 — Outcome</p>
+        <h2 class="section-title">成果與反思</h2>
+        <div class="outcome-stats">
+          <div class="stat-item">
+            <div class="stat-num">2</div>
+            <div class="stat-label">週內完成<br />完整設計系統與原型</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-num">2</div>
+            <div class="stat-label">種用戶角色<br />攤主與主辦方</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-num">好評</div>
+            <div class="stat-label">獲評審<br />正面肯定</div>
+          </div>
+        </div>
+        <div class="outcome-reflection">
+          這個專案是我第一次以主視覺設計師身份參與完整的 UX 設計流程——從
+          Persona、User Journey、Site Map 到高保真 UI
+          一氣呵成。最大的收穫是理解了「研究驅動設計」的意義：我的行程狀態功能不是憑空想出來的，而是直接回應了
+          User Journey 中找到的痛點。<br /><br />
+          <strong>如果重來一次</strong
+          >，我會更早讓兩種用戶角色的流程並行設計，而不是先完成攤主側再補主辦方側，這樣可以更早發現兩者之間的介面一致性問題。
+        </div>
+      </div>
+
+      <footer></footer>
     </div>
 
-    <!-- 06 SCREENS -->
-    <div class="section">
-      <p class="section-num">06 — Key Screens</p>
-      <h2 class="section-title">主要畫面</h2>
-      <div class="screens-grid">
-        <div class="screen-item">
-          <img src="./pic/9 (9).webp" alt="首頁" onerror="this.style.display='none'" />
-          <p class="screen-caption">首頁 — 熱門市集瀏覽</p>
-        </div>
-        <div class="screen-item">
-          <img src="./pic/9 (5).webp" alt="報名流程" onerror="this.style.display='none'" />
-          <p class="screen-caption">攤商報名 — 分步驟填寫</p>
-        </div>
-        <div class="screen-item">
-          <img src="./pic/9 (12).webp" alt="報名狀態" onerror="this.style.display='none'" />
-          <p class="screen-caption">我的行程 — 即時狀態追蹤</p>
-        </div>
-        <div class="screen-item">
-          <img src="./pic/9 (10).webp" alt="市集瀏覽" onerror="this.style.display='none'" />
-          <p class="screen-caption">市集瀏覽 — 篩選與搜尋</p>
-        </div>
-        
-        
-      </div>
-    </div>
+    <script>
+      const cursor = document.getElementById("cursor");
+      if (cursor) {
+        document.addEventListener("mousemove", (e) => {
+          cursor.style.left = e.clientX + "px";
+          cursor.style.top = e.clientY + "px";
+        });
+      }
 
-    <!-- 07 OUTCOME -->
-    <div class="section">
-      <p class="section-num">07 — Outcome</p>
-      <h2 class="section-title">成果與反思</h2>
-      <div class="outcome-stats">
-        <div class="stat-item">
-          <div class="stat-num">2</div>
-          <div class="stat-label">週內完成<br>完整設計系統與原型</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-num">2</div>
-          <div class="stat-label">種用戶角色<br>攤主與主辦方</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-num">好評</div>
-          <div class="stat-label">獲評審<br>正面肯定</div>
-        </div>
-      </div>
-      <div class="outcome-reflection">
-        這個專案是我第一次以主視覺設計師身份參與完整的 UX 設計流程——從 Persona、User Journey、Site Map 到高保真 UI 一氣呵成。最大的收穫是理解了「研究驅動設計」的意義：我的行程狀態功能不是憑空想出來的，而是直接回應了 User Journey 中找到的痛點。<br><br>
-        <strong>如果重來一次</strong>，我會更早讓兩種用戶角色的流程並行設計，而不是先完成攤主側再補主辦方側，這樣可以更早發現兩者之間的介面一致性問題。
-      </div>
-    </div>
+      const hamburger = document.getElementById("nav-hamburger");
+      const navDrawer = document.getElementById("nav-links");
+      const navOverlay = document.getElementById("nav-overlay");
 
-    <footer>
-    </footer>
-
-  </div>
-
-  <script>
-    const cursor = document.getElementById('cursor');
-    if (cursor) {
-      document.addEventListener('mousemove', e => {
-        cursor.style.left = e.clientX + 'px';
-        cursor.style.top  = e.clientY + 'px';
-      });
-    }
-
-    const hamburger  = document.getElementById('nav-hamburger');
-    const navDrawer  = document.getElementById('nav-links');
-    const navOverlay = document.getElementById('nav-overlay');
-
-    function openMenu() {
-      hamburger.classList.add('is-open');
-      navDrawer.classList.add('is-open');
-      navOverlay.classList.add('is-open');
-      hamburger.setAttribute('aria-expanded', 'true');
-      document.body.style.overflow = 'hidden';
-    }
-    function closeMenu() {
-      hamburger.classList.remove('is-open');
-      navDrawer.classList.remove('is-open');
-      navOverlay.classList.remove('is-open');
-      hamburger.setAttribute('aria-expanded', 'false');
-      document.body.style.overflow = '';
-    }
-    hamburger.addEventListener('click', () =>
-      hamburger.classList.contains('is-open') ? closeMenu() : openMenu()
-    );
-    navOverlay.addEventListener('click', closeMenu);
-    navDrawer.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMenu));
-  </script>
-</body>
+      function openMenu() {
+        hamburger.classList.add("is-open");
+        navDrawer.classList.add("is-open");
+        navOverlay.classList.add("is-open");
+        hamburger.setAttribute("aria-expanded", "true");
+        document.body.style.overflow = "hidden";
+      }
+      function closeMenu() {
+        hamburger.classList.remove("is-open");
+        navDrawer.classList.remove("is-open");
+        navOverlay.classList.remove("is-open");
+        hamburger.setAttribute("aria-expanded", "false");
+        document.body.style.overflow = "";
+      }
+      hamburger.addEventListener("click", () =>
+        hamburger.classList.contains("is-open") ? closeMenu() : openMenu(),
+      );
+      navOverlay.addEventListener("click", closeMenu);
+      navDrawer
+        .querySelectorAll("a")
+        .forEach((a) => a.addEventListener("click", closeMenu));
+    </script>
+  </body>
 </html>
