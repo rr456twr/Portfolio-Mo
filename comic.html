@@ -1,954 +1,1203 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-TW">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>COMIC</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Noto+Sans+TC:wght@300;400&family=Tenor+Sans&display=swap" rel="stylesheet">
-<link href="https://fonts.cdnfonts.com/css/broadway" rel="stylesheet">
-<style>
-  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    background: #060606;
-    width: 100vw;
-    height: 100vh;
-    height: 100dvh;
-    overflow: hidden;
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    user-select: none;
-    cursor: default;
-  }
-  canvas { display: block; position: relative; z-index: 1; }
-
-  :root { --font-menu: 'Amarna Light', 'Nirmala UI', sans-serif; }
-
-  #hint {
-    position: fixed;
-    bottom: max(28px, env(safe-area-inset-bottom, 0px) + 16px);
-    left: 50%;
-    transform: translateX(-50%);
-    color: rgba(255,255,255,0.25);
-    font-size: 10px;
-    letter-spacing: 0.24em;
-    text-transform: uppercase;
-    pointer-events: none;
-    transition: opacity 1.4s ease;
-  }
-  #hint.hide { opacity: 0; }
-
-  /* Hold progress ring */
-  #hold-ring {
-    position: fixed;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.15s ease;
-    transform: translate(-50%, -50%);
-  }
-  #hold-ring.visible { opacity: 1; }
-  #hold-ring svg { overflow: visible; }
-  #hold-ring circle.track {
-    fill: none;
-    stroke: rgba(255,255,255,0.12);
-    stroke-width: 1.5;
-  }
-  #hold-ring circle.progress {
-    fill: none;
-    stroke: rgba(255,255,255,0.85);
-    stroke-width: 1.5;
-    stroke-linecap: round;
-    transform-origin: center;
-    transform: rotate(-90deg);
-    transition: stroke-dashoffset 0.04s linear;
-  }
-
-  /* Lightbox overlay */
-  #lightbox {
-    position: fixed;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    pointer-events: none;
-    z-index: 100;
-  }
-  #lightbox-backdrop {
-    position: absolute;
-    inset: 0;
-    background: rgba(0,0,0,0);
-    transition: background 0.6s ease;
-    pointer-events: none;
-  }
-  #lightbox.open #lightbox-backdrop {
-    background: rgba(0,0,0,0.72);
-    pointer-events: all;
-    cursor: pointer;
-  }
-  #lightbox-card {
-    position: relative;
-    z-index: 1;
-    pointer-events: none;
-    /* driven entirely by JS */
-  }
-  #lightbox-canvas {
-    display: block;
-    border-radius: 8px;
-    box-shadow: 0 0 0 0 rgba(255,255,255,0);
-    transition: box-shadow 0.5s ease;
-  }
-  #lightbox.open #lightbox-canvas {
-    box-shadow: 0 40px 100px rgba(0,0,0,0.), 0 0 0 0.5px rgba(255,255,255,0.15);
-  }
-
-  /* Close X — nav の下に移動 */
-  #close-btn {
-    position: fixed;
-    top: clamp(70px, 12vh, 100px);
-    right: 32px;
-    width: 36px;
-    height: 36px;
-    cursor: pointer;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.4s ease;
-    z-index: 200;
-  }
-
-/* ════════ NAV ════════ */
-#nav {
-  position: fixed;
-  top: 40px; left: 0; right: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: clamp(24px, 4vw, 32px) clamp(24px, 4vw, 56px);
-  gap: clamp(24px, 6vw, 85px);
-  z-index: 300;
-  --nav-fg: #fff;
-  background: rgba(10,10,15,0.25);
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
-}
-.nav-links {
-  display: flex;
-  align-items: center;
-  gap: clamp(16px, 2.2vw, 32px);
-  flex-wrap: wrap;
-  justify-content: center;
-}
-#nav a {
-  font-family: var(--font-menu);
-  font-size: clamp(11px, 1.1vw, 16px);
-  font-weight: 400;
-  letter-spacing: 0.5em;
-  color: var(--nav-fg);
-  text-decoration: none;
-  text-transform: uppercase;
-  transition: color 0.4s ease, border-color 0.4s ease, background 0.4s ease,
-              box-shadow 0.4s ease, font-weight 0.2s ease;
-  padding: 10px;
-  position: relative;
-}
-#nav a:not(.contact)::after {
-  content: '';
-  position: absolute;
-  bottom: 4px; left: 10px; right: 10px;
-  height: 1.5px;
-  background: currentColor;
-  transform: scaleX(0);
-  transform-origin: left center;
-  transition: transform 0.3s ease, opacity 0.3s ease;
-  opacity: 0;
-}
-#nav a:not(.contact):hover { font-weight: 700; }
-#nav a:not(.contact):hover::after { transform: scaleX(1); opacity: 1; }
-#nav a:not(.contact).nav-active { font-weight: 700; }
-#nav a:not(.contact).nav-active::after { transform: scaleX(1); opacity: 1; }
-#nav a.contact {
-  border: 1px solid #fff;
-  background: transparent;
-  padding: 10px 22px;
-  border-radius: 999px;
-  font-weight: 700;
-  letter-spacing: 0.5em;
-  color: #fff !important;
-  box-shadow: none;
-  transition: background 0.28s ease, color 0.28s ease, box-shadow 0.28s ease, border 0.28s ease;
-}
-#nav a.contact:hover {
-  background: #fff;
-  border-color: transparent;
-  color: #222 !important;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.10), 0 8px 18px rgba(0,0,0,0.08);
-}
-.nav-hamburger {
-  display: none;
-  flex-direction: column;
-  justify-content: center;
-  gap: 5px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 6px;
-  z-index: 401;
-  flex-shrink: 0;
-}
-.nav-hamburger span {
-  display: block;
-  width: 22px; height: 1.5px;
-  background: #fff;
-  border-radius: 2px;
-  transition: transform 0.3s, opacity 0.3s;
-  transform-origin: center;
-}
-.nav-hamburger.is-open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
-.nav-hamburger.is-open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
-.nav-hamburger.is-open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
-.nav-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.45);
-  z-index: 350;
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-.nav-overlay.is-open { opacity: 1; }
-
-/* ── Tablet (769px – 1024px) ── */
-@media (max-width: 1024px) and (min-width: 769px) {
-  #nav {
-    top: 0;
-    padding: 16px clamp(16px, 3vw, 40px);
-    gap: clamp(16px, 3vw, 48px);
-  }
-  #nav a { font-size: clamp(10px, 1.2vw, 13px); }
-}
-
-@media (max-width: 768px) {
-  #nav {
-    top: 0;
-    padding: 14px 20px;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-  }
-  .nav-hamburger { display: flex; }
-  .nav-overlay { display: block; pointer-events: none; }
-  .nav-overlay.is-open { pointer-events: auto; }
-  .nav-links {
-    position: fixed;
-    top: 0; right: -100%;
-    width: min(72vw, 280px);
-    height: 100dvh;
-    background: rgba(15,20,30,0.97);
-    backdrop-filter: blur(20px);
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: center;
-    gap: 4px;
-    padding: 80px 36px 60px;
-    z-index: 400;
-    transition: right 0.38s cubic-bezier(0.4,0,0.2,1);
-  }
-  .nav-links.is-open { right: 0; }
-  .nav-links a {
-    font-size: 11px !important;
-    letter-spacing: 0.32em;
-    padding: 12px 0 !important;
-    color: #fff !important;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-    width: 100%;
-  }
-  .nav-links a:last-child { border-bottom: none; }
-  #nav-contact {
-    background: transparent !important;
-    border: 1px solid #fff !important;
-    border-radius: 24px !important;
-    padding: 10px 18px !important;
-    margin-top: 20px;
-    align-self: flex-start;
-  }
-  #close-btn { top: clamp(56px, 10vh, 80px); right: 20px; width: 44px; height: 44px; }
-  #hint { font-size: 9px; bottom: max(20px, env(safe-area-inset-bottom, 0px) + 12px); letter-spacing: 0.18em; }
-}
-  #close-btn.show {
-    opacity: 1;
-    pointer-events: all;
-  }
-  #close-btn::before, #close-btn::after {
-    content: '';
-    position: absolute;
-    top: 50%; left: 50%;
-    width: 18px; height: 1px;
-    background: #fff;
-  }
-  #close-btn::before { transform: translate(-50%,-50%) rotate(45deg); }
-  #close-btn::after  { transform: translate(-50%,-50%) rotate(-45deg); }
-  #close-btn:hover::before, #close-btn:hover::after { background: #fff; }
-</style>
-</head>
-<body>
-
-<!-- NAV -->
-<nav id="nav">
-  <button class="nav-hamburger" id="nav-hamburger" aria-label="開啟選單" aria-expanded="false">
-    <span></span><span></span><span></span>
-  </button>
-  <div class="nav-overlay" id="nav-overlay"></div>
-  <div class="nav-links" id="nav-links">
-    <a href="./index.html">HOME</a>
-    <a href="./ui.html">MOBILE</a>
-    <a href="./web.html">WEB</a>
-    <a href="./ill.html" class="nav-active">ILLUSTRATION</a>
-    <a href="./photography.html">PHOTOGRAPHY</a>
-  </div>
-  <a href="./contact.html" class="contact" id="nav-contact">CONTACT</a>
-</nav>
-
-
-<!-- Background image with opacity -->
-<div style="position:fixed;inset:0;z-index:0;pointer-events:none;">
-  <img src="./pic/bk-5.png" alt="Background" style="width:100%;height:100%;object-fit:cover;opacity:0.8;">
-</div>
-<canvas id="c"></canvas>
-<div id="hint">Click &amp; hold a card</div>
-
-<!-- Hold progress ring (follows cursor) -->
-<div id="hold-ring">
-  <svg width="56" height="56" viewBox="0 0 56 56">
-    <circle class="track"    cx="28" cy="28" r="22"/>
-    <circle class="progress" cx="28" cy="28" r="22" id="ring-arc"
-      stroke-dasharray="138.23" stroke-dashoffset="138.23"/>
-  </svg>
-</div>
-
-<!-- Lightbox -->
-<div id="lightbox">
-  <div id="lightbox-backdrop"></div>
-  <div id="lightbox-card">
-    <canvas id="lightbox-canvas" width="600" height="390"></canvas>
-  </div>
-</div>
-<div id="close-btn" id="close-btn"></div>
-
-<script>
-// ─────────────────────────────────────────────
-// Config
-// ─────────────────────────────────────────────
-const CARD_COUNT   = 16;
-const CARD_BASE    = 210;   // 基準長邊 px
-const PERSPECTIVE  = 900;
-const FRICTION     = 0.88;
-const HOLD_MS      = 520;   // ms to hold before pull starts
-const LB_LONG      = 2400;  // lightbox 長邊最大 px
-const DPR          = Math.min(window.devicePixelRatio || 1, 3);
-
-// 每張卡片的原始尺寸（圖片載入後填入，預設正方形）
-const cardSizes = Array.from({length: CARD_COUNT}, () => ({ w: CARD_BASE, h: CARD_BASE }));
-
-function getCardWH(i) { return cardSizes[i % cardSizes.length]; }
-
-const canvas = document.getElementById('c');
-const ctx    = canvas.getContext('2d');
-const hint   = document.getElementById('hint');
-
-const holdRing   = document.getElementById('hold-ring');
-const ringArc    = document.getElementById('ring-arc');
-const CIRC       = 2 * Math.PI * 22; // ≈138.23
-
-const lightbox   = document.getElementById('lightbox');
-const lbBackdrop = document.getElementById('lightbox-backdrop');
-const lbCard     = document.getElementById('lightbox-card');
-const lbCanvas   = document.getElementById('lightbox-canvas');
-const lbCtx      = lbCanvas.getContext('2d');
-const closeBtn   = document.getElementById('close-btn');
-
-function resize() {
-  const w = window.innerWidth;
-  const h = window.innerHeight;
-  canvas.width  = Math.round(w * DPR);
-  canvas.height = Math.round(h * DPR);
-  canvas.style.width  = w + 'px';
-  canvas.style.height = h + 'px';
-  ctx.scale(DPR, DPR);
-}
-resize();
-window.addEventListener('resize', () => {
-  resize();
-  if (lightboxOpen) closeLightbox();
-});
-
-// ─────────────────────────────────────────────
-// Sphere layout
-// ─────────────────────────────────────────────
-let BASE_RADIUS = () => Math.min(window.innerWidth, window.innerHeight) * 0.40;
-
-function fibSphere(n) {
-  const pts = [], golden = Math.PI * (3 - Math.sqrt(5));
-  for (let i = 0; i < n; i++) {
-    const y = 1 - (i / (n-1)) * 2;
-    const r = Math.sqrt(1 - y*y);
-    const t = golden * i;
-    pts.push({ x: Math.cos(t)*r, y, z: Math.sin(t)*r });
-  }
-  return pts;
-}
-const basePositions = fibSphere(CARD_COUNT);
-
-// ─────────────────────────────────────────────
-// 你的圖片 — 填入檔名即可（跟 HTML 同資料夾）
-// ─────────────────────────────────────────────
-const MY_IMAGES = [
-  './pic/4 (1).webp',
-  './pic/4 (2).webp',
-  './pic/4 (3).webp',
-  './pic/4 (4).webp',
-  './pic/4 (5).webp',
-  './pic/4 (6).webp',
-  './pic/4 (7).webp',
-  './pic/4 (8).webp',
-  './pic/4 (9).webp',
-  './pic/4 (10).webp',
-  './pic/4 (11).webp',
-  './pic/4 (12).webp',
-  './pic/4 (13).webp',
-  './pic/4 (14).webp',
-];
-
-// 預先載入所有圖片，載入後記錄實際比例
-const loadedImgs = MY_IMAGES.map((src, i) => {
-  const img = new Image();
-  img.onload = () => {
-    const ratio = img.naturalWidth / img.naturalHeight;
-    let cw, ch;
-    if (ratio >= 1) { cw = CARD_BASE; ch = Math.round(CARD_BASE / ratio); }
-    else            { ch = CARD_BASE; cw = Math.round(CARD_BASE * ratio); }
-    cardSizes[i] = { w: cw, h: ch };
-    // 清快取，讓 getImg 用正確比例 + DPR 重繪
-    Object.keys(imgCache).forEach(k => { if (k.startsWith(i + '-')) delete imgCache[k]; });
-  };
-  img.src = src;
-  return img;
-});
-
-const BG = ['#0d1b2a','#1b1b2f','#0f2027','#1a0a2e','#071a1f','#1f0a14','#0a1f0d','#1f1a0a','#0a0f1f','#1a0f0a','#0e1a2b','#1a0e1f','#0a1e1a','#1e140a','#0f0a1e','#1a1e0a'];
-
-const imgCache = {};
-function getImg(i) {
-  const src = loadedImgs[i % loadedImgs.length];
-
-  // 圖片已載入：直接回傳原始 Image，讓瀏覽器用原生解析度繪製
-  if (src && src.complete && src.naturalWidth) {
-    return src;
-  }
-
-  // 未載入先回傳純色佔位符（不 cache）
-  const key = `placeholder-${i}`;
-  if (imgCache[key]) return imgCache[key];
-  const { w, h } = getCardWH(i);
-  const oc = document.createElement('canvas');
-  oc.width = w; oc.height = h;
-  oc.getContext('2d').fillStyle = BG[i % BG.length];
-  oc.getContext('2d').fillRect(0, 0, w, h);
-  imgCache[key] = oc;
-  return oc;
-}
-
-// ─────────────────────────────────────────────
-// Rotation helpers
-// ─────────────────────────────────────────────
-let rot = [[1,0,0],[0,1,0],[0,0,1]];
-
-function matMul(A,B) {
-  const C=[[0,0,0],[0,0,0],[0,0,0]];
-  for(let i=0;i<3;i++) for(let j=0;j<3;j++) for(let k=0;k<3;k++) C[i][j]+=A[i][k]*B[k][j];
-  return C;
-}
-function axisAngle(ax,ay,az,th) {
-  const c=Math.cos(th),s=Math.sin(th),t=1-c;
-  return [[t*ax*ax+c,t*ax*ay-s*az,t*ax*az+s*ay],[t*ax*ay+s*az,t*ay*ay+c,t*ay*az-s*ax],[t*ax*az-s*ay,t*ay*az+s*ax,t*az*az+c]];
-}
-function applyRot(m,p) {
-  return { x:m[0][0]*p.x+m[0][1]*p.y+m[0][2]*p.z, y:m[1][0]*p.x+m[1][1]*p.y+m[1][2]*p.z, z:m[2][0]*p.x+m[2][1]*p.y+m[2][2]*p.z };
-}
-
-let sphereScale       = 1.0;
-let sphereScaleTarget = 1.0;
-const SCALE_LERP      = 0.10;
-
-function project(p3) {
-  const cx = window.innerWidth/2, cy = window.innerHeight/2; // CSS px (ctx已scale DPR)
-  const sz = p3.z * sphereScale;
-  const fov = PERSPECTIVE / (PERSPECTIVE + sz);
-  return { sx: cx + p3.x*sphereScale*fov, sy: cy + p3.y*sphereScale*fov, fov, worldZ: p3.z };
-}
-
-function hitTest(mx, my) {
-  const all = basePositions.map((p,i) => {
-    const w = applyRot(rot, { x:p.x*BASE_RADIUS(), y:p.y*BASE_RADIUS(), z:p.z*BASE_RADIUS() });
-    const pr = project(w);
-    return { i, worldZ: w.z, pr };
-  }).sort((a,b) => b.worldZ - a.worldZ);
-
-  for (const { i, pr } of all) {
-    const t = (pr.worldZ + BASE_RADIUS()) / (2*BASE_RADIUS());
-    if (t < 0.3) continue;
-    const sc = pr.fov * sphereScale * cardScales[i];
-    const { w: cw0, h: ch0 } = getCardWH(i);
-    const cw = cw0*sc, ch = ch0*sc;
-    const cx = pr.sx - cw/2, cy2 = pr.sy - ch/2;
-    if (mx >= cx && mx <= cx+cw && my >= cy2 && my <= cy2+ch) return i;
-  }
-  return -1;
-}
-
-// ─────────────────────────────────────────────
-// State machine
-// ─────────────────────────────────────────────
-// States: 'idle' | 'holding' | 'pulling' | 'lightbox'
-let state        = 'idle';
-let holdCardIdx  = -1;
-let holdStart    = 0;
-let holdMx = 0, holdMy = 0;
-
-// Pulling animation: card moves from its 3D projected pos → screen center
-let pullProgress  = 0;   // 0 → 1
-let pullStartPos  = { x: 0, y: 0, w: 0, h: 0 }; // screen rect when pull begins
-let lightboxOpen  = false;
-let lbCardIdx     = -1;
-
-// Drag-to-rotate (only when NOT in lightbox)
-let isDrag  = false;
-let lastMx = 0, lastMy = 0;
-let vx = 0, vy = 0;
-
-// ─────────────────────────────────────────────
-// Hold ring helpers
-// ─────────────────────────────────────────────
-function showRing(mx, my) {
-  holdRing.style.left = mx + 'px';
-  holdRing.style.top  = my + 'px';
-  holdRing.classList.add('visible');
-}
-function hideRing() {
-  holdRing.classList.remove('visible');
-  ringArc.style.strokeDashoffset = CIRC;
-}
-function updateRing(progress) {
-  // progress 0..1
-  ringArc.style.strokeDashoffset = CIRC * (1 - progress);
-}
-
-// ─────────────────────────────────────────────
-// Get a card's current screen rect
-// ─────────────────────────────────────────────
-function getCardScreenRect(idx) {
-  const p  = basePositions[idx];
-  const w  = applyRot(rot, { x:p.x*BASE_RADIUS(), y:p.y*BASE_RADIUS(), z:p.z*BASE_RADIUS() });
-  const pr = project(w);
-  const sc = pr.fov * sphereScale * cardScales[idx];
-  const { w: cw0, h: ch0 } = getCardWH(idx);
-  const cw = cw0*sc, ch = ch0*sc;
-  return { x: pr.sx - cw/2, y: pr.sy - ch/2, w: cw, h: ch };
-}
-
-// ─────────────────────────────────────────────
-// Lightbox canvas draw
-// ─────────────────────────────────────────────
-function drawLightboxCard(idx) {
-  const { w, h } = getCardWH(idx);
-  lbCtx.clearRect(0, 0, w, h);
-  lbCtx.drawImage(getImg(idx), 0, 0, w, h);
-}
-
-// ─────────────────────────────────────────────
-// Open / close lightbox
-// ─────────────────────────────────────────────
-function openLightbox(idx, startRect) {
-  lbCardIdx = idx;
-  drawLightboxCard(idx);
-
-  // Lightbox target: centered, keep original ratio
-  const { w: imgW, h: imgH } = getCardWH(idx);
-  const imgRatio = imgW / imgH;
-  const isMobile = window.innerWidth < 769;
-  const maxW = canvas.width  * (isMobile ? 0.95 : 0.98);
-  const maxH = canvas.height * (isMobile ? 0.92 : 0.98);
-  let targetW = Math.min(LB_LONG, maxW);
-  let targetH = targetW / imgRatio;
-  if (targetH > maxH) { targetH = maxH; targetW = targetH * imgRatio; }
-  const targetX = (canvas.width  - targetW) / 2;
-  const targetY = (canvas.height - targetH) / 2;
-
-  lbCanvas.width  = imgW;
-  lbCanvas.height = imgH;
-  drawLightboxCard(idx);
-
-  // Start: position matches where the card was on screen
-  lbCard.style.transition = 'none';
-  lbCard.style.position   = 'fixed';
-  lbCard.style.left   = startRect.x + 'px';
-  lbCard.style.top    = startRect.y + 'px';
-  lbCard.style.width  = startRect.w + 'px';
-  lbCard.style.height = startRect.h + 'px';
-  lbCanvas.style.width  = '100%';
-  lbCanvas.style.height = '100%';
-  lbCard.style.opacity  = '0';
-  lbCard.style.transform = 'scale(0.92)';
-  lbCard.style.pointerEvents = 'none';
-
-  lightbox.classList.remove('open');
-  lightboxOpen = false;
-
-  // Force reflow then animate
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      lbCard.style.transition = 'left 0.55s cubic-bezier(0.16,1,0.3,1), top 0.55s cubic-bezier(0.16,1,0.3,1), width 0.55s cubic-bezier(0.16,1,0.3,1), height 0.55s cubic-bezier(0.16,1,0.3,1), opacity 0.3s ease, transform 0.55s cubic-bezier(0.16,1,0.3,1)';
-      lbCard.style.left    = targetX + 'px';
-      lbCard.style.top     = targetY + 'px';
-      lbCard.style.width   = targetW + 'px';
-      lbCard.style.height  = targetH + 'px';
-      lbCard.style.opacity = '1';
-      lbCard.style.transform = 'scale(1)';
-      lightbox.classList.add('open');
-      lightboxOpen = true;
-    });
-  });
-
-  setTimeout(() => {
-    closeBtn.classList.add('show');
-    lbCard.style.pointerEvents = 'all';
-  }, 400);
-
-  // Fade sphere
-  sphereScaleTarget = 0.78;
-  state = 'lightbox';
-}
-
-function closeLightbox() {
-  if (!lightboxOpen) return;
-  lightboxOpen = false;
-
-  // Animate back toward where the card lives on sphere
-  const endRect = getCardScreenRect(lbCardIdx);
-
-  lbCard.style.transition = 'left 0.45s cubic-bezier(0.4,0,1,1), top 0.45s cubic-bezier(0.4,0,1,1), width 0.45s cubic-bezier(0.4,0,1,1), height 0.45s cubic-bezier(0.4,0,1,1), opacity 0.3s ease 0.15s, transform 0.45s ease';
-  lbCard.style.left    = endRect.x + 'px';
-  lbCard.style.top     = endRect.y + 'px';
-  lbCard.style.width   = endRect.w + 'px';
-  lbCard.style.height  = endRect.h + 'px';
-  lbCard.style.opacity = '0';
-  lbCard.style.transform = 'scale(0.88)';
-
-  lightbox.classList.remove('open');
-  closeBtn.classList.remove('show');
-  sphereScaleTarget = 1.0;
-
-  setTimeout(() => {
-    lbCardIdx = -1;
-    lbCard.style.pointerEvents = 'none';
-    lbCard.style.transition = 'none';
-    state = 'idle';
-  }, 500);
-}
-
-// ─────────────────────────────────────────────
-// Input handlers
-// ─────────────────────────────────────────────
-let holdTimer = null;
-let pointerDownPos = { x: 0, y: 0 };
-
-function onPointerDown(mx, my) {
-  if (state === 'lightbox') return;
-
-  const hit = hitTest(mx, my);
-  if (hit === -1) {
-    // Start free-rotate drag
-    isDrag  = true;
-    lastMx  = mx; lastMy = my;
-    vx = 0; vy = 0;
-    canvas.style.cursor = 'grabbing';
-    return;
-  }
-
-  // Start hold timer
-  holdCardIdx = hit;
-  holdStart   = performance.now();
-  holdMx = mx; holdMy = my;
-  pointerDownPos = { x: mx, y: my };
-  state = 'holding';
-
-  showRing(mx, my);
-  hint.classList.add('hide');
-
-  holdTimer = setTimeout(() => {
-    if (state !== 'holding') return;
-    state = 'pulling';
-    hideRing();
-    canvas.style.cursor = 'default';
-
-    const startRect = getCardScreenRect(holdCardIdx);
-    openLightbox(holdCardIdx, startRect);
-  }, HOLD_MS);
-}
-
-function onPointerMove(mx, my) {
-  if (state === 'lightbox') return;
-
-  if (state === 'holding') {
-    const dx = mx - pointerDownPos.x, dy = my - pointerDownPos.y;
-    const dist = Math.sqrt(dx*dx + dy*dy);
-
-    if (dist > 6) {
-      // Cancel hold timer, switch to drag-rotate (card follows finger)
-      if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
-      hideRing();
-      state = 'idle';
-      isDrag = true;
-      lastMx = mx; lastMy = my;
-      vx = 0; vy = 0;
-      canvas.style.cursor = 'grabbing';
-      // Apply the initial movement already accumulated
-      applyDragRotation(dx, dy);
-      pointerDownPos = { x: mx, y: my };
-      return;
-    }
-
-    const progress = Math.min(1, (performance.now() - holdStart) / HOLD_MS);
-    updateRing(progress);
-    showRing(holdMx, holdMy);
-    return;
-  }
-
-  if (isDrag) {
-    const dx = mx - lastMx;
-    const dy = my - lastMy;
-    applyDragRotation(dx, dy);
-    lastMx = mx; lastMy = my;
-    return;
-  }
-
-  // Hover cursor
-  const hit = hitTest(mx, my);
-  canvas.style.cursor = hit !== -1 ? 'grab' : 'default';
-}
-
-function onPointerUp() {
-  cancelHold();
-  if (isDrag) {
-    isDrag = false;
-    canvas.style.cursor = 'default';
-    inertia();
-  }
-}
-
-function cancelHold() {
-  if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
-  holdCardIdx = -1;
-  hideRing();
-  if (state === 'holding') state = 'idle';
-}
-
-// ─────────────────────────────────────────────
-// Drag rotation (correct direction)
-// ─────────────────────────────────────────────
-function applyDragRotation(dx, dy) {
-  const sens = 1 / (BASE_RADIUS() * sphereScale * 0.9);
-  const dAngY =  dx * sens;
-  const dAngX = -dy * sens;   // negated: drag down → bottom cards come forward
-  vx = dAngX; vy = dAngY;
-  const Ry = axisAngle(0,1,0, dAngY);
-  const Rx = axisAngle(1,0,0, dAngX);
-  rot = matMul(matMul(Ry, Rx), rot);
-}
-
-// ─────────────────────────────────────────────
-// Inertia
-// ─────────────────────────────────────────────
-function inertia() {
-  vx *= FRICTION; vy *= FRICTION;
-  if (Math.abs(vx) > 0.0002 || Math.abs(vy) > 0.0002) {
-    const Ry = axisAngle(0,1,0, vy);
-    const Rx = axisAngle(1,0,0, vx);
-    rot = matMul(matMul(Ry, Rx), rot);
-    requestAnimationFrame(inertia);
-  } else { vx=0; vy=0; }
-}
-
-// ─────────────────────────────────────────────
-// Continuous hold progress update
-// ─────────────────────────────────────────────
-function updateHoldProgress() {
-  if (state === 'holding') {
-    const progress = Math.min(1, (performance.now() - holdStart) / HOLD_MS);
-    updateRing(progress);
-  }
-  requestAnimationFrame(updateHoldProgress);
-}
-requestAnimationFrame(updateHoldProgress);
-
-// ─────────────────────────────────────────────
-// Round rect clip
-// ─────────────────────────────────────────────
-function roundRect(x,y,w,h,r) {
-  ctx.beginPath();
-  ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.quadraticCurveTo(x+w,y,x+w,y+r);
-  ctx.lineTo(x+w,y+h-r); ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
-  ctx.lineTo(x+r,y+h); ctx.quadraticCurveTo(x,y+h,x,y+h-r);
-  ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y);
-  ctx.closePath();
-}
-
-// ─────────────────────────────────────────────
-// Main draw loop
-// ─────────────────────────────────────────────
-let frontIdx = 0;
-// Per-card scale multipliers，初始全部 1.0
-const cardScales = new Array(CARD_COUNT).fill(1.0);
-const CARD_SCALE_LERP = 0.08; // 越小越慢，0.08 約 0.5 秒過渡
-
-function draw() {
-  sphereScale += (sphereScaleTarget - sphereScale) * SCALE_LERP;
-
-  ctx.clearRect(0,0,window.innerWidth,window.innerHeight);
-
-  const transformed = basePositions.map((p,i) => {
-    const w  = applyRot(rot, { x:p.x*BASE_RADIUS(), y:p.y*BASE_RADIUS(), z:p.z*BASE_RADIUS() });
-    const pr = project(w);
-    return { i, world:w, proj:pr };
-  });
-
-  transformed.sort((a,b) => a.world.z - b.world.z);
-
-  let bestZ = -Infinity;
-  transformed.forEach(({i,world}) => { if(world.z>bestZ){bestZ=world.z;frontIdx=i;} });
-
-  // 每幀 lerp 每張卡片的 scale：frontIdx → 2.0，其他 → 1.0
-  for (let i = 0; i < CARD_COUNT; i++) {
-    const target = (i === frontIdx && !lightboxOpen) ? 2.0 : 1.0;
-    cardScales[i] += (target - cardScales[i]) * CARD_SCALE_LERP;
-  }
-
-  // When lightbox open, fade sphere cards
-  const sphereAlphaMul = lightboxOpen ? 0.18 : 1.0;
-
-  transformed.forEach(({i,world,proj}) => {
-    const {sx,sy,fov} = proj;
-
-    // Hide the card that's currently in lightbox
-    if (i === lbCardIdx && lightboxOpen) return;
-
-    const t     = (world.z + BASE_RADIUS()) / (2*BASE_RADIUS());
-    const alpha = (0.10 + 0.90*t) * sphereAlphaMul;
-    const scale = fov * sphereScale * cardScales[i];
-
-    const { w: cw0, h: ch0 } = getCardWH(i);
-    const cw=cw0*scale, ch=ch0*scale;
-    const cx=sx-cw/2, cy=sy-ch/2;
-
-    ctx.save();
-    ctx.globalAlpha = alpha;
-    roundRect(cx,cy,cw,ch,5*scale);
-    ctx.clip();
-    ctx.drawImage(getImg(i), cx,cy,cw,ch);
-
-    // Pulse ring on holding card
-    if (i === holdCardIdx && state === 'holding') {
-      ctx.globalAlpha = 0.15;
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(cx,cy,cw,ch);
-    }
-    ctx.restore();
-
-    // Subtle border on frontmost
-    if (i === frontIdx && state === 'idle' && !lightboxOpen) {
-      ctx.save();
-      ctx.globalAlpha = 0.28;
-      roundRect(cx,cy,cw,ch,5*scale);
-      ctx.strokeStyle = 'rgba(255,255,255,0.9)';
-      ctx.lineWidth = 0.8;
-      ctx.stroke();
-      ctx.restore();
-    }
-  });
-
-  requestAnimationFrame(draw);
-}
-
-// ─────────────────────────────────────────────
-// Events
-// ─────────────────────────────────────────────
-canvas.addEventListener('mousedown',  e => onPointerDown(e.clientX, e.clientY));
-window.addEventListener('mousemove',  e => onPointerMove(e.clientX, e.clientY));
-window.addEventListener('mouseup',    onPointerUp);
-
-canvas.addEventListener('touchstart', e => {
-  e.preventDefault();
-  onPointerDown(e.touches[0].clientX, e.touches[0].clientY);
-}, { passive: false });
-window.addEventListener('touchmove', e => {
-  e.preventDefault();
-  onPointerMove(e.touches[0].clientX, e.touches[0].clientY);
-}, { passive: false });
-window.addEventListener('touchend', onPointerUp);
-
-lbBackdrop.addEventListener('click', closeLightbox);
-closeBtn.addEventListener('click', closeLightbox);
-
-// ─────────────────────────────────────────────
-// Auto-spin on load
-// ─────────────────────────────────────────────
-let autoSpeed = 0.006;
-function autoSpin() {
-  if (isDrag || state !== 'idle') return;
-  autoSpeed = Math.max(0, autoSpeed - 0.000035);
-  const Ry = axisAngle(0,1,0, autoSpeed);
-  const Rx = axisAngle(1,0,0, autoSpeed*0.2);
-  rot = matMul(Ry, matMul(Rx, rot));
-  if (autoSpeed > 0) requestAnimationFrame(autoSpin);
-}
-requestAnimationFrame(autoSpin);
-
-/* ════════ NAV ════════ */
-const hamburger  = document.getElementById('nav-hamburger');
-const navDrawer  = document.getElementById('nav-links');
-const navOverlay = document.getElementById('nav-overlay');
-
-function openMenu() {
-  hamburger.classList.add('is-open');
-  navDrawer.classList.add('is-open');
-  navOverlay.classList.add('is-open');
-  hamburger.setAttribute('aria-expanded', 'true');
-  document.body.style.overflow = 'hidden';
-}
-function closeMenu() {
-  hamburger.classList.remove('is-open');
-  navDrawer.classList.remove('is-open');
-  navOverlay.classList.remove('is-open');
-  hamburger.setAttribute('aria-expanded', 'false');
-  document.body.style.overflow = '';
-}
-hamburger.addEventListener('click', () => hamburger.classList.contains('is-open') ? closeMenu() : openMenu());
-navOverlay.addEventListener('click', closeMenu);
-navDrawer.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMenu));
-
-const navLinkEls = Array.from(document.querySelectorAll('#nav a')).filter(a => !a.classList.contains('contact'));
-navLinkEls.forEach(a => {
-  a.addEventListener('click', e => {
-    navLinkEls.forEach(l => l.classList.remove('nav-active'));
-    a.classList.add('nav-active');
-    if (a.getAttribute('href') === '#') e.preventDefault();
-  });
-});
-
-const hintText = ('ontouchstart' in window) ? 'Touch &amp; hold a card' : 'Click &amp; hold a card';
-hint.innerHTML = hintText;
-
-draw();
-setTimeout(() => hint.classList.add('hide'), 6000);
-</script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>COMIC</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Noto+Sans+TC:wght@300;400&family=Tenor+Sans&display=swap"
+      rel="stylesheet"
+    />
+    <link href="https://fonts.cdnfonts.com/css/broadway" rel="stylesheet" />
+    <style>
+      *,
+      *::before,
+      *::after {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        background: #060606;
+        width: 100vw;
+        height: 100vh;
+        height: 100dvh;
+        overflow: hidden;
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        user-select: none;
+        cursor: default;
+      }
+      canvas {
+        display: block;
+        position: relative;
+        z-index: 1;
+      }
+
+      :root {
+        --font-menu: "Amarna Light", "Nirmala UI", sans-serif;
+      }
+
+      #hint {
+        position: fixed;
+        bottom: max(28px, env(safe-area-inset-bottom, 0px) + 16px);
+        left: 50%;
+        transform: translateX(-50%);
+        color: rgba(255, 255, 255, 0.25);
+        font-size: 10px;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+        pointer-events: none;
+        transition: opacity 1.4s ease;
+      }
+      #hint.hide {
+        opacity: 0;
+      }
+
+      /* Hold progress ring */
+      #hold-ring {
+        position: fixed;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.15s ease;
+        transform: translate(-50%, -50%);
+      }
+      #hold-ring.visible {
+        opacity: 1;
+      }
+      #hold-ring svg {
+        overflow: visible;
+      }
+      #hold-ring circle.track {
+        fill: none;
+        stroke: rgba(255, 255, 255, 0.12);
+        stroke-width: 1.5;
+      }
+      #hold-ring circle.progress {
+        fill: none;
+        stroke: rgba(255, 255, 255, 0.85);
+        stroke-width: 1.5;
+        stroke-linecap: round;
+        transform-origin: center;
+        transform: rotate(-90deg);
+        transition: stroke-dashoffset 0.04s linear;
+      }
+
+      /* Lightbox overlay */
+      #lightbox {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+        z-index: 100;
+      }
+      #lightbox-backdrop {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0);
+        transition: background 0.6s ease;
+        pointer-events: none;
+      }
+      #lightbox.open #lightbox-backdrop {
+        background: rgba(0, 0, 0, 0.72);
+        pointer-events: all;
+        cursor: pointer;
+      }
+      #lightbox-card {
+        position: relative;
+        z-index: 1;
+        pointer-events: none;
+        /* driven entirely by JS */
+      }
+      #lightbox-canvas {
+        display: block;
+        border-radius: 8px;
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+        transition: box-shadow 0.5s ease;
+      }
+      #lightbox.open #lightbox-canvas {
+        box-shadow:
+          0 40px 100px rgba(0, 0, 0, 0),
+          0 0 0 0.5px rgba(255, 255, 255, 0.15);
+      }
+
+      /* Close X — nav の下に移動 */
+      #close-btn {
+        position: fixed;
+        top: clamp(70px, 12vh, 100px);
+        right: 32px;
+        width: 36px;
+        height: 36px;
+        cursor: pointer;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.4s ease;
+        z-index: 200;
+      }
+
+      /* ════════ NAV ════════ */
+      #nav {
+        position: fixed;
+        top: 40px;
+        left: 0;
+        right: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: clamp(24px, 4vw, 32px) clamp(24px, 4vw, 56px);
+        gap: clamp(24px, 6vw, 85px);
+        z-index: 300;
+        --nav-fg: #fff;
+        background: rgba(10, 10, 15, 0.25);
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
+      }
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: clamp(16px, 2.2vw, 32px);
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      #nav a {
+        font-family: var(--font-menu);
+        font-size: clamp(11px, 1.1vw, 16px);
+        font-weight: 400;
+        letter-spacing: 0.5em;
+        color: var(--nav-fg);
+        text-decoration: none;
+        text-transform: uppercase;
+        transition:
+          color 0.4s ease,
+          border-color 0.4s ease,
+          background 0.4s ease,
+          box-shadow 0.4s ease,
+          font-weight 0.2s ease;
+        padding: 10px;
+        position: relative;
+      }
+      #nav a:not(.contact)::after {
+        content: "";
+        position: absolute;
+        bottom: 4px;
+        left: 10px;
+        right: 10px;
+        height: 1.5px;
+        background: currentColor;
+        transform: scaleX(0);
+        transform-origin: left center;
+        transition:
+          transform 0.3s ease,
+          opacity 0.3s ease;
+        opacity: 0;
+      }
+      #nav a:not(.contact):hover {
+        font-weight: 700;
+      }
+      #nav a:not(.contact):hover::after {
+        transform: scaleX(1);
+        opacity: 1;
+      }
+      #nav a:not(.contact).nav-active {
+        font-weight: 700;
+      }
+      #nav a:not(.contact).nav-active::after {
+        transform: scaleX(1);
+        opacity: 1;
+      }
+      #nav a.contact {
+        border: 1px solid #fff;
+        background: transparent;
+        padding: 10px 22px;
+        border-radius: 999px;
+        font-weight: 700;
+        letter-spacing: 0.5em;
+        color: #fff !important;
+        box-shadow: none;
+        transition:
+          background 0.28s ease,
+          color 0.28s ease,
+          box-shadow 0.28s ease,
+          border 0.28s ease;
+      }
+      #nav a.contact:hover {
+        background: #fff;
+        border-color: transparent;
+        color: #222 !important;
+        box-shadow:
+          0 2px 6px rgba(0, 0, 0, 0.1),
+          0 8px 18px rgba(0, 0, 0, 0.08);
+      }
+      .nav-hamburger {
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        gap: 5px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 6px;
+        z-index: 401;
+        flex-shrink: 0;
+      }
+      .nav-hamburger span {
+        display: block;
+        width: 22px;
+        height: 1.5px;
+        background: #fff;
+        border-radius: 2px;
+        transition:
+          transform 0.3s,
+          opacity 0.3s;
+        transform-origin: center;
+      }
+      .nav-hamburger.is-open span:nth-child(1) {
+        transform: translateY(6.5px) rotate(45deg);
+      }
+      .nav-hamburger.is-open span:nth-child(2) {
+        opacity: 0;
+        transform: scaleX(0);
+      }
+      .nav-hamburger.is-open span:nth-child(3) {
+        transform: translateY(-6.5px) rotate(-45deg);
+      }
+      .nav-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        z-index: 350;
+        opacity: 0;
+        transition: opacity 0.3s;
+      }
+      .nav-overlay.is-open {
+        opacity: 1;
+      }
+
+      /* ── Tablet (769px – 1024px) ── */
+      @media (max-width: 1024px) and (min-width: 769px) {
+        #nav {
+          top: 0;
+          padding: 16px clamp(16px, 3vw, 40px);
+          gap: clamp(16px, 3vw, 48px);
+        }
+        #nav a {
+          font-size: clamp(10px, 1.2vw, 13px);
+        }
+      }
+
+      @media (max-width: 768px) {
+        #nav {
+          top: 0;
+          padding: 14px 20px;
+          flex-direction: row;
+          justify-content: space-between;
+          align-items: center;
+          gap: 12px;
+        }
+        .nav-hamburger {
+          display: flex;
+        }
+        .nav-overlay {
+          display: block;
+          pointer-events: none;
+        }
+        .nav-overlay.is-open {
+          pointer-events: auto;
+        }
+        .nav-links {
+          position: fixed;
+          top: 0;
+          right: -100%;
+          width: min(72vw, 280px);
+          height: 100dvh;
+          background: rgba(15, 20, 30, 0.97);
+          backdrop-filter: blur(20px);
+          flex-direction: column;
+          align-items: flex-start;
+          justify-content: center;
+          gap: 4px;
+          padding: 80px 36px 60px;
+          z-index: 400;
+          transition: right 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .nav-links.is-open {
+          right: 0;
+        }
+        .nav-links a {
+          font-size: 11px !important;
+          letter-spacing: 0.32em;
+          padding: 12px 0 !important;
+          color: #fff !important;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+          width: 100%;
+        }
+        .nav-links a:last-child {
+          border-bottom: none;
+        }
+        #nav-contact {
+          background: transparent !important;
+          border: 1px solid #fff !important;
+          border-radius: 24px !important;
+          padding: 10px 18px !important;
+          margin-top: 20px;
+          align-self: flex-start;
+        }
+        #close-btn {
+          top: clamp(56px, 10vh, 80px);
+          right: 20px;
+          width: 44px;
+          height: 44px;
+        }
+        #hint {
+          font-size: 9px;
+          bottom: max(20px, env(safe-area-inset-bottom, 0px) + 12px);
+          letter-spacing: 0.18em;
+        }
+      }
+      #close-btn.show {
+        opacity: 1;
+        pointer-events: all;
+      }
+      #close-btn::before,
+      #close-btn::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 18px;
+        height: 1px;
+        background: #fff;
+      }
+      #close-btn::before {
+        transform: translate(-50%, -50%) rotate(45deg);
+      }
+      #close-btn::after {
+        transform: translate(-50%, -50%) rotate(-45deg);
+      }
+      #close-btn:hover::before,
+      #close-btn:hover::after {
+        background: #fff;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- NAV -->
+    <nav id="nav">
+      <button
+        class="nav-hamburger"
+        id="nav-hamburger"
+        aria-label="開啟選單"
+        aria-expanded="false"
+      >
+        <span></span><span></span><span></span>
+      </button>
+      <div class="nav-overlay" id="nav-overlay"></div>
+      <div class="nav-links" id="nav-links">
+        <a href="./index.html">HOME</a>
+        <a href="./ui.html">MOBILE</a>
+        <a href="./web.html">WEB</a>
+        <a href="./ill.html" class="nav-active">ILLUSTRATION</a>
+        <a href="./photography.html">PHOTOGRAPHY</a>
+      </div>
+      <a href="./contact.html" class="contact" id="nav-contact">CONTACT</a>
+    </nav>
+
+    <!-- Background image with opacity -->
+    <div style="position: fixed; inset: 0; z-index: 0; pointer-events: none">
+      <img
+        src="./pic/bk-5.png"
+        alt="Background"
+        style="width: 100%; height: 100%; object-fit: cover; opacity: 0.8"
+      />
+    </div>
+    <canvas id="c"></canvas>
+    <div id="hint">Click &amp; hold a card</div>
+
+    <!-- Hold progress ring (follows cursor) -->
+    <div id="hold-ring">
+      <svg width="56" height="56" viewBox="0 0 56 56">
+        <circle class="track" cx="28" cy="28" r="22" />
+        <circle
+          class="progress"
+          cx="28"
+          cy="28"
+          r="22"
+          id="ring-arc"
+          stroke-dasharray="138.23"
+          stroke-dashoffset="138.23"
+        />
+      </svg>
+    </div>
+
+    <!-- Lightbox -->
+    <div id="lightbox">
+      <div id="lightbox-backdrop"></div>
+      <div id="lightbox-card">
+        <canvas id="lightbox-canvas" width="600" height="390"></canvas>
+      </div>
+    </div>
+    <div id="close-btn" id="close-btn"></div>
+
+    <script>
+      // ─────────────────────────────────────────────
+      // Config
+      // ─────────────────────────────────────────────
+      const CARD_COUNT = 14;
+      const CARD_BASE = 210; // 基準長邊 px
+      const PERSPECTIVE = 900;
+      const FRICTION = 0.88;
+      const HOLD_MS = 520; // ms to hold before pull starts
+      const LB_LONG = 2400; // lightbox 長邊最大 px
+      const DPR = Math.min(window.devicePixelRatio || 1, 3);
+
+      // 每張卡片的原始尺寸（圖片載入後填入，預設正方形）
+      const cardSizes = Array.from({ length: CARD_COUNT }, () => ({
+        w: CARD_BASE,
+        h: CARD_BASE,
+      }));
+
+      function getCardWH(i) {
+        return cardSizes[i % cardSizes.length];
+      }
+
+      const canvas = document.getElementById("c");
+      const ctx = canvas.getContext("2d");
+      const hint = document.getElementById("hint");
+
+      const holdRing = document.getElementById("hold-ring");
+      const ringArc = document.getElementById("ring-arc");
+      const CIRC = 2 * Math.PI * 22; // ≈138.23
+
+      const lightbox = document.getElementById("lightbox");
+      const lbBackdrop = document.getElementById("lightbox-backdrop");
+      const lbCard = document.getElementById("lightbox-card");
+      const lbCanvas = document.getElementById("lightbox-canvas");
+      const lbCtx = lbCanvas.getContext("2d");
+      const closeBtn = document.getElementById("close-btn");
+
+      function resize() {
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+        canvas.width = Math.round(w * DPR);
+        canvas.height = Math.round(h * DPR);
+        canvas.style.width = w + "px";
+        canvas.style.height = h + "px";
+        ctx.scale(DPR, DPR);
+      }
+      resize();
+      window.addEventListener("resize", () => {
+        resize();
+        if (lightboxOpen) closeLightbox();
+      });
+
+      // ─────────────────────────────────────────────
+      // Sphere layout
+      // ─────────────────────────────────────────────
+      let BASE_RADIUS = () =>
+        Math.min(window.innerWidth, window.innerHeight) * 0.4;
+
+      function fibSphere(n) {
+        const pts = [],
+          golden = Math.PI * (3 - Math.sqrt(5));
+        for (let i = 0; i < n; i++) {
+          const y = 1 - (i / (n - 1)) * 2;
+          const r = Math.sqrt(1 - y * y);
+          const t = golden * i;
+          pts.push({ x: Math.cos(t) * r, y, z: Math.sin(t) * r });
+        }
+        return pts;
+      }
+      const basePositions = fibSphere(CARD_COUNT);
+
+      // ─────────────────────────────────────────────
+      // 你的圖片 — 填入檔名即可（跟 HTML 同資料夾）
+      // ─────────────────────────────────────────────
+      const MY_IMAGES = [
+        "./pic/4 (1).webp",
+        "./pic/4 (2).webp",
+        "./pic/4 (3).webp",
+        "./pic/4 (4).webp",
+        "./pic/4 (5).webp",
+        "./pic/4 (6).webp",
+        "./pic/4 (7).webp",
+        "./pic/4 (8).webp",
+        "./pic/4 (9).webp",
+        "./pic/4 (10).webp",
+        "./pic/4 (11).webp",
+        "./pic/4 (12).webp",
+        "./pic/4 (13).webp",
+        "./pic/4 (14).webp",
+      ];
+
+      // 預先載入所有圖片，載入後記錄實際比例
+      const loadedImgs = MY_IMAGES.map((src, i) => {
+        const img = new Image();
+        img.onload = () => {
+          const ratio = img.naturalWidth / img.naturalHeight;
+          let cw, ch;
+          if (ratio >= 1) {
+            cw = CARD_BASE;
+            ch = Math.round(CARD_BASE / ratio);
+          } else {
+            ch = CARD_BASE;
+            cw = Math.round(CARD_BASE * ratio);
+          }
+          cardSizes[i] = { w: cw, h: ch };
+          // 清快取，讓 getImg 用正確比例 + DPR 重繪
+          Object.keys(imgCache).forEach((k) => {
+            if (k.startsWith(i + "-")) delete imgCache[k];
+          });
+        };
+        img.src = src;
+        return img;
+      });
+
+      const BG = [
+        "#0d1b2a",
+        "#1b1b2f",
+        "#0f2027",
+        "#1a0a2e",
+        "#071a1f",
+        "#1f0a14",
+        "#0a1f0d",
+        "#1f1a0a",
+        "#0a0f1f",
+        "#1a0f0a",
+        "#0e1a2b",
+        "#1a0e1f",
+        "#0a1e1a",
+        "#1e140a",
+        "#0f0a1e",
+        "#1a1e0a",
+      ];
+
+      const imgCache = {};
+      function getImg(i) {
+        const src = loadedImgs[i % loadedImgs.length];
+
+        // 圖片已載入：直接回傳原始 Image，讓瀏覽器用原生解析度繪製
+        if (src && src.complete && src.naturalWidth) {
+          return src;
+        }
+
+        // 未載入先回傳純色佔位符（不 cache）
+        const key = `placeholder-${i}`;
+        if (imgCache[key]) return imgCache[key];
+        const { w, h } = getCardWH(i);
+        const oc = document.createElement("canvas");
+        oc.width = w;
+        oc.height = h;
+        oc.getContext("2d").fillStyle = BG[i % BG.length];
+        oc.getContext("2d").fillRect(0, 0, w, h);
+        imgCache[key] = oc;
+        return oc;
+      }
+
+      // ─────────────────────────────────────────────
+      // Rotation helpers
+      // ─────────────────────────────────────────────
+      let rot = [
+        [1, 0, 0],
+        [0, 1, 0],
+        [0, 0, 1],
+      ];
+
+      function matMul(A, B) {
+        const C = [
+          [0, 0, 0],
+          [0, 0, 0],
+          [0, 0, 0],
+        ];
+        for (let i = 0; i < 3; i++)
+          for (let j = 0; j < 3; j++)
+            for (let k = 0; k < 3; k++) C[i][j] += A[i][k] * B[k][j];
+        return C;
+      }
+      function axisAngle(ax, ay, az, th) {
+        const c = Math.cos(th),
+          s = Math.sin(th),
+          t = 1 - c;
+        return [
+          [t * ax * ax + c, t * ax * ay - s * az, t * ax * az + s * ay],
+          [t * ax * ay + s * az, t * ay * ay + c, t * ay * az - s * ax],
+          [t * ax * az - s * ay, t * ay * az + s * ax, t * az * az + c],
+        ];
+      }
+      function applyRot(m, p) {
+        return {
+          x: m[0][0] * p.x + m[0][1] * p.y + m[0][2] * p.z,
+          y: m[1][0] * p.x + m[1][1] * p.y + m[1][2] * p.z,
+          z: m[2][0] * p.x + m[2][1] * p.y + m[2][2] * p.z,
+        };
+      }
+
+      let sphereScale = 1.0;
+      let sphereScaleTarget = 1.0;
+      const SCALE_LERP = 0.1;
+
+      function project(p3) {
+        const cx = window.innerWidth / 2,
+          cy = window.innerHeight / 2; // CSS px (ctx已scale DPR)
+        const sz = p3.z * sphereScale;
+        const fov = PERSPECTIVE / (PERSPECTIVE + sz);
+        return {
+          sx: cx + p3.x * sphereScale * fov,
+          sy: cy + p3.y * sphereScale * fov,
+          fov,
+          worldZ: p3.z,
+        };
+      }
+
+      function hitTest(mx, my) {
+        const all = basePositions
+          .map((p, i) => {
+            const w = applyRot(rot, {
+              x: p.x * BASE_RADIUS(),
+              y: p.y * BASE_RADIUS(),
+              z: p.z * BASE_RADIUS(),
+            });
+            const pr = project(w);
+            return { i, worldZ: w.z, pr };
+          })
+          .sort((a, b) => b.worldZ - a.worldZ);
+
+        for (const { i, pr } of all) {
+          const t = (pr.worldZ + BASE_RADIUS()) / (2 * BASE_RADIUS());
+          if (t < 0.3) continue;
+          const sc = pr.fov * sphereScale * cardScales[i];
+          const { w: cw0, h: ch0 } = getCardWH(i);
+          const cw = cw0 * sc,
+            ch = ch0 * sc;
+          const cx = pr.sx - cw / 2,
+            cy2 = pr.sy - ch / 2;
+          if (mx >= cx && mx <= cx + cw && my >= cy2 && my <= cy2 + ch)
+            return i;
+        }
+        return -1;
+      }
+
+      // ─────────────────────────────────────────────
+      // State machine
+      // ─────────────────────────────────────────────
+      // States: 'idle' | 'holding' | 'pulling' | 'lightbox'
+      let state = "idle";
+      let holdCardIdx = -1;
+      let holdStart = 0;
+      let holdMx = 0,
+        holdMy = 0;
+
+      // Pulling animation: card moves from its 3D projected pos → screen center
+      let pullProgress = 0; // 0 → 1
+      let pullStartPos = { x: 0, y: 0, w: 0, h: 0 }; // screen rect when pull begins
+      let lightboxOpen = false;
+      let lbCardIdx = -1;
+
+      // Drag-to-rotate (only when NOT in lightbox)
+      let isDrag = false;
+      let lastMx = 0,
+        lastMy = 0;
+      let vx = 0,
+        vy = 0;
+
+      // ─────────────────────────────────────────────
+      // Hold ring helpers
+      // ─────────────────────────────────────────────
+      function showRing(mx, my) {
+        holdRing.style.left = mx + "px";
+        holdRing.style.top = my + "px";
+        holdRing.classList.add("visible");
+      }
+      function hideRing() {
+        holdRing.classList.remove("visible");
+        ringArc.style.strokeDashoffset = CIRC;
+      }
+      function updateRing(progress) {
+        // progress 0..1
+        ringArc.style.strokeDashoffset = CIRC * (1 - progress);
+      }
+
+      // ─────────────────────────────────────────────
+      // Get a card's current screen rect
+      // ─────────────────────────────────────────────
+      function getCardScreenRect(idx) {
+        const p = basePositions[idx];
+        const w = applyRot(rot, {
+          x: p.x * BASE_RADIUS(),
+          y: p.y * BASE_RADIUS(),
+          z: p.z * BASE_RADIUS(),
+        });
+        const pr = project(w);
+        const sc = pr.fov * sphereScale * cardScales[idx];
+        const { w: cw0, h: ch0 } = getCardWH(idx);
+        const cw = cw0 * sc,
+          ch = ch0 * sc;
+        return { x: pr.sx - cw / 2, y: pr.sy - ch / 2, w: cw, h: ch };
+      }
+
+      // ─────────────────────────────────────────────
+      // Lightbox canvas draw
+      // ─────────────────────────────────────────────
+      function drawLightboxCard(idx) {
+        const { w, h } = getCardWH(idx);
+        lbCtx.clearRect(0, 0, w, h);
+        lbCtx.drawImage(getImg(idx), 0, 0, w, h);
+      }
+
+      // ─────────────────────────────────────────────
+      // Open / close lightbox
+      // ─────────────────────────────────────────────
+      function openLightbox(idx, startRect) {
+        lbCardIdx = idx;
+        drawLightboxCard(idx);
+
+        // Lightbox target: centered, keep original ratio
+        const { w: imgW, h: imgH } = getCardWH(idx);
+        const imgRatio = imgW / imgH;
+        const isMobile = window.innerWidth < 769;
+        const maxW = canvas.width * (isMobile ? 0.95 : 0.98);
+        const maxH = canvas.height * (isMobile ? 0.92 : 0.98);
+        let targetW = Math.min(LB_LONG, maxW);
+        let targetH = targetW / imgRatio;
+        if (targetH > maxH) {
+          targetH = maxH;
+          targetW = targetH * imgRatio;
+        }
+        const targetX = (canvas.width - targetW) / 2;
+        const targetY = (canvas.height - targetH) / 2;
+
+        lbCanvas.width = imgW;
+        lbCanvas.height = imgH;
+        drawLightboxCard(idx);
+
+        // Start: position matches where the card was on screen
+        lbCard.style.transition = "none";
+        lbCard.style.position = "fixed";
+        lbCard.style.left = startRect.x + "px";
+        lbCard.style.top = startRect.y + "px";
+        lbCard.style.width = startRect.w + "px";
+        lbCard.style.height = startRect.h + "px";
+        lbCanvas.style.width = "100%";
+        lbCanvas.style.height = "100%";
+        lbCard.style.opacity = "0";
+        lbCard.style.transform = "scale(0.92)";
+        lbCard.style.pointerEvents = "none";
+
+        lightbox.classList.remove("open");
+        lightboxOpen = false;
+
+        // Force reflow then animate
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            lbCard.style.transition =
+              "left 0.55s cubic-bezier(0.16,1,0.3,1), top 0.55s cubic-bezier(0.16,1,0.3,1), width 0.55s cubic-bezier(0.16,1,0.3,1), height 0.55s cubic-bezier(0.16,1,0.3,1), opacity 0.3s ease, transform 0.55s cubic-bezier(0.16,1,0.3,1)";
+            lbCard.style.left = targetX + "px";
+            lbCard.style.top = targetY + "px";
+            lbCard.style.width = targetW + "px";
+            lbCard.style.height = targetH + "px";
+            lbCard.style.opacity = "1";
+            lbCard.style.transform = "scale(1)";
+            lightbox.classList.add("open");
+            lightboxOpen = true;
+          });
+        });
+
+        setTimeout(() => {
+          closeBtn.classList.add("show");
+          lbCard.style.pointerEvents = "all";
+        }, 400);
+
+        // Fade sphere
+        sphereScaleTarget = 0.78;
+        state = "lightbox";
+      }
+
+      function closeLightbox() {
+        if (!lightboxOpen) return;
+        lightboxOpen = false;
+
+        // Animate back toward where the card lives on sphere
+        const endRect = getCardScreenRect(lbCardIdx);
+
+        lbCard.style.transition =
+          "left 0.45s cubic-bezier(0.4,0,1,1), top 0.45s cubic-bezier(0.4,0,1,1), width 0.45s cubic-bezier(0.4,0,1,1), height 0.45s cubic-bezier(0.4,0,1,1), opacity 0.3s ease 0.15s, transform 0.45s ease";
+        lbCard.style.left = endRect.x + "px";
+        lbCard.style.top = endRect.y + "px";
+        lbCard.style.width = endRect.w + "px";
+        lbCard.style.height = endRect.h + "px";
+        lbCard.style.opacity = "0";
+        lbCard.style.transform = "scale(0.88)";
+
+        lightbox.classList.remove("open");
+        closeBtn.classList.remove("show");
+        sphereScaleTarget = 1.0;
+
+        setTimeout(() => {
+          lbCardIdx = -1;
+          lbCard.style.pointerEvents = "none";
+          lbCard.style.transition = "none";
+          state = "idle";
+        }, 500);
+      }
+
+      // ─────────────────────────────────────────────
+      // Input handlers
+      // ─────────────────────────────────────────────
+      let holdTimer = null;
+      let pointerDownPos = { x: 0, y: 0 };
+
+      function onPointerDown(mx, my) {
+        if (state === "lightbox") return;
+
+        const hit = hitTest(mx, my);
+        if (hit === -1) {
+          // Start free-rotate drag
+          isDrag = true;
+          lastMx = mx;
+          lastMy = my;
+          vx = 0;
+          vy = 0;
+          canvas.style.cursor = "grabbing";
+          return;
+        }
+
+        // Start hold timer
+        holdCardIdx = hit;
+        holdStart = performance.now();
+        holdMx = mx;
+        holdMy = my;
+        pointerDownPos = { x: mx, y: my };
+        state = "holding";
+
+        showRing(mx, my);
+        hint.classList.add("hide");
+
+        holdTimer = setTimeout(() => {
+          if (state !== "holding") return;
+          state = "pulling";
+          hideRing();
+          canvas.style.cursor = "default";
+
+          const startRect = getCardScreenRect(holdCardIdx);
+          openLightbox(holdCardIdx, startRect);
+        }, HOLD_MS);
+      }
+
+      function onPointerMove(mx, my) {
+        if (state === "lightbox") return;
+
+        if (state === "holding") {
+          const dx = mx - pointerDownPos.x,
+            dy = my - pointerDownPos.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist > 6) {
+            // Cancel hold timer, switch to drag-rotate (card follows finger)
+            if (holdTimer) {
+              clearTimeout(holdTimer);
+              holdTimer = null;
+            }
+            hideRing();
+            state = "idle";
+            isDrag = true;
+            lastMx = mx;
+            lastMy = my;
+            vx = 0;
+            vy = 0;
+            canvas.style.cursor = "grabbing";
+            // Apply the initial movement already accumulated
+            applyDragRotation(dx, dy);
+            pointerDownPos = { x: mx, y: my };
+            return;
+          }
+
+          const progress = Math.min(
+            1,
+            (performance.now() - holdStart) / HOLD_MS,
+          );
+          updateRing(progress);
+          showRing(holdMx, holdMy);
+          return;
+        }
+
+        if (isDrag) {
+          const dx = mx - lastMx;
+          const dy = my - lastMy;
+          applyDragRotation(dx, dy);
+          lastMx = mx;
+          lastMy = my;
+          return;
+        }
+
+        // Hover cursor
+        const hit = hitTest(mx, my);
+        canvas.style.cursor = hit !== -1 ? "grab" : "default";
+      }
+
+      function onPointerUp() {
+        cancelHold();
+        if (isDrag) {
+          isDrag = false;
+          canvas.style.cursor = "default";
+          inertia();
+        }
+      }
+
+      function cancelHold() {
+        if (holdTimer) {
+          clearTimeout(holdTimer);
+          holdTimer = null;
+        }
+        holdCardIdx = -1;
+        hideRing();
+        if (state === "holding") state = "idle";
+      }
+
+      // ─────────────────────────────────────────────
+      // Drag rotation (correct direction)
+      // ─────────────────────────────────────────────
+      function applyDragRotation(dx, dy) {
+        const sens = 1 / (BASE_RADIUS() * sphereScale * 0.9);
+        const dAngY = dx * sens;
+        const dAngX = -dy * sens; // negated: drag down → bottom cards come forward
+        vx = dAngX;
+        vy = dAngY;
+        const Ry = axisAngle(0, 1, 0, dAngY);
+        const Rx = axisAngle(1, 0, 0, dAngX);
+        rot = matMul(matMul(Ry, Rx), rot);
+      }
+
+      // ─────────────────────────────────────────────
+      // Inertia
+      // ─────────────────────────────────────────────
+      function inertia() {
+        vx *= FRICTION;
+        vy *= FRICTION;
+        if (Math.abs(vx) > 0.0002 || Math.abs(vy) > 0.0002) {
+          const Ry = axisAngle(0, 1, 0, vy);
+          const Rx = axisAngle(1, 0, 0, vx);
+          rot = matMul(matMul(Ry, Rx), rot);
+          requestAnimationFrame(inertia);
+        } else {
+          vx = 0;
+          vy = 0;
+        }
+      }
+
+      // ─────────────────────────────────────────────
+      // Continuous hold progress update
+      // ─────────────────────────────────────────────
+      function updateHoldProgress() {
+        if (state === "holding") {
+          const progress = Math.min(
+            1,
+            (performance.now() - holdStart) / HOLD_MS,
+          );
+          updateRing(progress);
+        }
+        requestAnimationFrame(updateHoldProgress);
+      }
+      requestAnimationFrame(updateHoldProgress);
+
+      // ─────────────────────────────────────────────
+      // Round rect clip
+      // ─────────────────────────────────────────────
+      function roundRect(x, y, w, h, r) {
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.lineTo(x + w - r, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+        ctx.lineTo(x + w, y + h - r);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        ctx.lineTo(x + r, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+        ctx.lineTo(x, y + r);
+        ctx.quadraticCurveTo(x, y, x + r, y);
+        ctx.closePath();
+      }
+
+      // ─────────────────────────────────────────────
+      // Main draw loop
+      // ─────────────────────────────────────────────
+      let frontIdx = 0;
+      // Per-card scale multipliers，初始全部 1.0
+      const cardScales = new Array(CARD_COUNT).fill(1.0);
+      const CARD_SCALE_LERP = 0.08; // 越小越慢，0.08 約 0.5 秒過渡
+
+      function draw() {
+        sphereScale += (sphereScaleTarget - sphereScale) * SCALE_LERP;
+
+        ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+
+        const transformed = basePositions.map((p, i) => {
+          const w = applyRot(rot, {
+            x: p.x * BASE_RADIUS(),
+            y: p.y * BASE_RADIUS(),
+            z: p.z * BASE_RADIUS(),
+          });
+          const pr = project(w);
+          return { i, world: w, proj: pr };
+        });
+
+        transformed.sort((a, b) => a.world.z - b.world.z);
+
+        let bestZ = -Infinity;
+        transformed.forEach(({ i, world }) => {
+          if (world.z > bestZ) {
+            bestZ = world.z;
+            frontIdx = i;
+          }
+        });
+
+        // 每幀 lerp 每張卡片的 scale：frontIdx → 2.0，其他 → 1.0
+        for (let i = 0; i < CARD_COUNT; i++) {
+          const target = i === frontIdx && !lightboxOpen ? 2.0 : 1.0;
+          cardScales[i] += (target - cardScales[i]) * CARD_SCALE_LERP;
+        }
+
+        // When lightbox open, fade sphere cards
+        const sphereAlphaMul = lightboxOpen ? 0.18 : 1.0;
+
+        transformed.forEach(({ i, world, proj }) => {
+          const { sx, sy, fov } = proj;
+
+          // Hide the card that's currently in lightbox
+          if (i === lbCardIdx && lightboxOpen) return;
+
+          const t = (world.z + BASE_RADIUS()) / (2 * BASE_RADIUS());
+          const alpha = (0.1 + 0.9 * t) * sphereAlphaMul;
+          const scale = fov * sphereScale * cardScales[i];
+
+          const { w: cw0, h: ch0 } = getCardWH(i);
+          const cw = cw0 * scale,
+            ch = ch0 * scale;
+          const cx = sx - cw / 2,
+            cy = sy - ch / 2;
+
+          ctx.save();
+          ctx.globalAlpha = alpha;
+          roundRect(cx, cy, cw, ch, 5 * scale);
+          ctx.clip();
+          ctx.drawImage(getImg(i), cx, cy, cw, ch);
+
+          // Pulse ring on holding card
+          if (i === holdCardIdx && state === "holding") {
+            ctx.globalAlpha = 0.15;
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(cx, cy, cw, ch);
+          }
+          ctx.restore();
+
+          // Subtle border on frontmost
+          if (i === frontIdx && state === "idle" && !lightboxOpen) {
+            ctx.save();
+            ctx.globalAlpha = 0.28;
+            roundRect(cx, cy, cw, ch, 5 * scale);
+            ctx.strokeStyle = "rgba(255,255,255,0.9)";
+            ctx.lineWidth = 0.8;
+            ctx.stroke();
+            ctx.restore();
+          }
+        });
+
+        requestAnimationFrame(draw);
+      }
+
+      // ─────────────────────────────────────────────
+      // Events
+      // ─────────────────────────────────────────────
+      canvas.addEventListener("mousedown", (e) =>
+        onPointerDown(e.clientX, e.clientY),
+      );
+      window.addEventListener("mousemove", (e) =>
+        onPointerMove(e.clientX, e.clientY),
+      );
+      window.addEventListener("mouseup", onPointerUp);
+
+      canvas.addEventListener(
+        "touchstart",
+        (e) => {
+          e.preventDefault();
+          onPointerDown(e.touches[0].clientX, e.touches[0].clientY);
+        },
+        { passive: false },
+      );
+      window.addEventListener(
+        "touchmove",
+        (e) => {
+          e.preventDefault();
+          onPointerMove(e.touches[0].clientX, e.touches[0].clientY);
+        },
+        { passive: false },
+      );
+      window.addEventListener("touchend", onPointerUp);
+
+      lbBackdrop.addEventListener("click", closeLightbox);
+      closeBtn.addEventListener("click", closeLightbox);
+
+      // ─────────────────────────────────────────────
+      // Auto-spin on load
+      // ─────────────────────────────────────────────
+      let autoSpeed = 0.006;
+      function autoSpin() {
+        if (isDrag || state !== "idle") return;
+        autoSpeed = Math.max(0, autoSpeed - 0.000035);
+        const Ry = axisAngle(0, 1, 0, autoSpeed);
+        const Rx = axisAngle(1, 0, 0, autoSpeed * 0.2);
+        rot = matMul(Ry, matMul(Rx, rot));
+        if (autoSpeed > 0) requestAnimationFrame(autoSpin);
+      }
+      requestAnimationFrame(autoSpin);
+
+      /* ════════ NAV ════════ */
+      const hamburger = document.getElementById("nav-hamburger");
+      const navDrawer = document.getElementById("nav-links");
+      const navOverlay = document.getElementById("nav-overlay");
+
+      function openMenu() {
+        hamburger.classList.add("is-open");
+        navDrawer.classList.add("is-open");
+        navOverlay.classList.add("is-open");
+        hamburger.setAttribute("aria-expanded", "true");
+        document.body.style.overflow = "hidden";
+      }
+      function closeMenu() {
+        hamburger.classList.remove("is-open");
+        navDrawer.classList.remove("is-open");
+        navOverlay.classList.remove("is-open");
+        hamburger.setAttribute("aria-expanded", "false");
+        document.body.style.overflow = "";
+      }
+      hamburger.addEventListener("click", () =>
+        hamburger.classList.contains("is-open") ? closeMenu() : openMenu(),
+      );
+      navOverlay.addEventListener("click", closeMenu);
+      navDrawer
+        .querySelectorAll("a")
+        .forEach((a) => a.addEventListener("click", closeMenu));
+
+      const navLinkEls = Array.from(document.querySelectorAll("#nav a")).filter(
+        (a) => !a.classList.contains("contact"),
+      );
+      navLinkEls.forEach((a) => {
+        a.addEventListener("click", (e) => {
+          navLinkEls.forEach((l) => l.classList.remove("nav-active"));
+          a.classList.add("nav-active");
+          if (a.getAttribute("href") === "#") e.preventDefault();
+        });
+      });
+
+      const hintText =
+        "ontouchstart" in window
+          ? "Touch &amp; hold a card"
+          : "Click &amp; hold a card";
+      hint.innerHTML = hintText;
+
+      draw();
+      setTimeout(() => hint.classList.add("hide"), 6000);
+    </script>
+  </body>
 </html>

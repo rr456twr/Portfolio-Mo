@@ -1,517 +1,650 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Portfolio</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=Noto+Sans+TC:wght@300;400&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --font-menu: 'Amarna Light', 'Nirmala UI', sans-serif;
-    --cols: 2;
-    --gap: 80px;
-    --card-radius: 20px;
-    --img-ratio: 16 / 8;
-    --scale: 1.04;
-    --overlay: rgba(0, 0, 0, 0.10);
-  }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Portfolio</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=Noto+Sans+TC:wght@300;400&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --font-menu: "Amarna Light", "Nirmala UI", sans-serif;
+        --cols: 2;
+        --gap: 80px;
+        --card-radius: 20px;
+        --img-ratio: 16 / 8;
+        --scale: 1.04;
+        --overlay: rgba(0, 0, 0, 0.1);
+      }
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-body {
-  position: relative;
-  font-family: 'DM Sans', 'Noto Sans TC', sans-serif;
-  background: linear-gradient(180deg, rgba(255,255,255,0.20) 55.29%, rgba(159,176,210,0.20) 79.33%, rgba(179,156,192,0.20) 100%), #F1F2F4;
-  min-height: 100vh;
-  overflow-x: hidden;
-  cursor: none;
-}
+      body {
+        position: relative;
+        font-family: "DM Sans", "Noto Sans TC", sans-serif;
+        background:
+          linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0.2) 55.29%,
+            rgba(159, 176, 210, 0.2) 79.33%,
+            rgba(179, 156, 192, 0.2) 100%
+          ),
+          #f1f2f4;
+        min-height: 100vh;
+        overflow-x: hidden;
+        cursor: none;
+      }
 
-/* ── Custom cursor ── */
-#cursor {
-  position: fixed;
-  width: 36px; height: 36px;
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 9999;
-  top: 0; left: 0;
-  transform: translate(-50%, -50%);
-  background: rgba(44,44,44,0.06);
-  border: 1.5px solid rgba(44,44,44,0.70);
-}
-#cursor::after {
-  content: '';
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: rgba(44,44,44,0.8);
-}
-@media (hover: none) and (pointer: coarse) {
-  body { cursor: auto; }
-  #cursor { display: none; }
-}
+      /* ── Custom cursor ── */
+      #cursor {
+        position: fixed;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 9999;
+        top: 0;
+        left: 0;
+        transform: translate(-50%, -50%);
+        background: rgba(44, 44, 44, 0.06);
+        border: 1.5px solid rgba(44, 44, 44, 0.7);
+      }
+      #cursor::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: rgba(44, 44, 44, 0.8);
+      }
+      @media (hover: none) and (pointer: coarse) {
+        body {
+          cursor: auto;
+        }
+        #cursor {
+          display: none;
+        }
+      }
 
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background: url('./pic/bubble.webp') center center / cover no-repeat;
-  opacity: 0.5;   /* ← 改這裡控制圖片透明度 */
-  z-index: 0;
-  pointer-events: none;
-}
-  /* ── 粒子 canvas 固定在最底層 ── */
-  #particle-canvas {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
-  }
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background: url("./pic/bubble.webp") center center / cover no-repeat;
+        opacity: 0.5; /* ← 改這裡控制圖片透明度 */
+        z-index: 0;
+        pointer-events: none;
+      }
+      /* ── 粒子 canvas 固定在最底層 ── */
+      #particle-canvas {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+      }
 
-  /* ── 所有頁面內容在粒子上面 ── */
-  .page {
-    position: relative;
-    z-index: 1;
-  }
+      /* ── 所有頁面內容在粒子上面 ── */
+      .page {
+        position: relative;
+        z-index: 1;
+      }
 
-  /* ════════ NAV ════════ */
-  
-  #nav {
-    position: fixed;
-    top: 40px; left: 0; right: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: clamp(24px, 4vw, 32px) clamp(24px, 4vw, 56px);
-    gap: clamp(24px, 6vw, 85px);
-    z-index: 200;
-    will-change: opacity;
-    --nav-fg: #222;
-    background: rgba(249,248,246,0.25);
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
-  }
+      /* ════════ NAV ════════ */
 
-  .nav-links {
-    display: flex;
-    align-items: center;
-    gap: clamp(16px, 2.2vw, 32px);
-    flex-wrap: wrap;
-    justify-content: center;
-  }
+      #nav {
+        position: fixed;
+        top: 40px;
+        left: 0;
+        right: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: clamp(24px, 4vw, 32px) clamp(24px, 4vw, 56px);
+        gap: clamp(24px, 6vw, 85px);
+        z-index: 200;
+        will-change: opacity;
+        --nav-fg: #222;
+        background: rgba(249, 248, 246, 0.25);
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
+      }
 
-  #nav a {
-    font-family: var(--font-menu);
-    font-size: clamp(11px, 1.1vw, 16px);
-    font-weight: 400;
-    letter-spacing: 0.5em;
-    color: var(--nav-fg);
-    text-decoration: none;
-    text-transform: uppercase;
-    transition: color 0.4s ease, border-color 0.4s ease, background 0.4s ease,
-                box-shadow 0.4s ease, font-weight 0.2s ease;
-    padding: 10px;
-    position: relative;
-  }
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: clamp(16px, 2.2vw, 32px);
+        flex-wrap: wrap;
+        justify-content: center;
+      }
 
-  /* 底線底座 */
-  #nav a:not(.contact)::after {
-    content: '';
-    position: absolute;
-    bottom: 4px;
-    left: 10px; right: 10px;
-    height: 1.5px;
-    background: currentColor;
-    transform: scaleX(0);
-    transform-origin: left center;
-    transition: transform 0.3s ease, opacity 0.3s ease;
-    opacity: 0;
-  }
+      #nav a {
+        font-family: var(--font-menu);
+        font-size: clamp(11px, 1.1vw, 16px);
+        font-weight: 400;
+        letter-spacing: 0.5em;
+        color: var(--nav-fg);
+        text-decoration: none;
+        text-transform: uppercase;
+        transition:
+          color 0.4s ease,
+          border-color 0.4s ease,
+          background 0.4s ease,
+          box-shadow 0.4s ease,
+          font-weight 0.2s ease;
+        padding: 10px;
+        position: relative;
+      }
 
-  /* Hover */
-  #nav a:not(.contact):hover { font-weight: 700; }
-  #nav a:not(.contact):hover::after { transform: scaleX(1); opacity: 1; }
+      /* 底線底座 */
+      #nav a:not(.contact)::after {
+        content: "";
+        position: absolute;
+        bottom: 4px;
+        left: 10px;
+        right: 10px;
+        height: 1.5px;
+        background: currentColor;
+        transform: scaleX(0);
+        transform-origin: left center;
+        transition:
+          transform 0.3s ease,
+          opacity 0.3s ease;
+        opacity: 0;
+      }
 
-  /* Active */
-  #nav a:not(.contact).nav-active { font-weight: 700; }
-  #nav a:not(.contact).nav-active::after { transform: scaleX(1); opacity: 1; }
+      /* Hover */
+      #nav a:not(.contact):hover {
+        font-weight: 700;
+      }
+      #nav a:not(.contact):hover::after {
+        transform: scaleX(1);
+        opacity: 1;
+      }
 
-  /* CONTACT — 白底深字 */
-  #nav a.contact {
-    border: none;
-    background: #fff;
-    padding: 10px 22px;
-    border-radius: 999px;
-    font-weight: 700;
-    letter-spacing: 0.5em;
-    color: #222;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.10), 0 8px 18px rgba(0,0,0,0.08);
-    transition: background 0.28s ease, color 0.28s ease, box-shadow 0.28s ease;
-  }
+      /* Active */
+      #nav a:not(.contact).nav-active {
+        font-weight: 700;
+      }
+      #nav a:not(.contact).nav-active::after {
+        transform: scaleX(1);
+        opacity: 1;
+      }
 
-  /* CONTACT hover — 深灰底白字 */
-  #nav a.contact:hover {
-    background: #626262;
-    color: #fff !important;
-    border-radius: 24px;
-    box-shadow: 1px 1px 3px 0 rgba(0,0,0,0.40) inset;
-  }
+      /* CONTACT — 白底深字 */
+      #nav a.contact {
+        border: none;
+        background: #fff;
+        padding: 10px 22px;
+        border-radius: 999px;
+        font-weight: 700;
+        letter-spacing: 0.5em;
+        color: #222;
+        box-shadow:
+          0 2px 6px rgba(0, 0, 0, 0.1),
+          0 8px 18px rgba(0, 0, 0, 0.08);
+        transition:
+          background 0.28s ease,
+          color 0.28s ease,
+          box-shadow 0.28s ease;
+      }
 
-  /* 深色頁 — 透明底＋白色細框 */
-  #nav.nav-dark-mode a.contact {
-    background: transparent;
-    border: 1px solid rgba(255,255,255,0.55);
-    color: #fff;
-    box-shadow: none;
-  }
+      /* CONTACT hover — 深灰底白字 */
+      #nav a.contact:hover {
+        background: #626262;
+        color: #fff !important;
+        border-radius: 24px;
+        box-shadow: 1px 1px 3px 0 rgba(0, 0, 0, 0.4) inset;
+      }
 
-  /* 深色頁 hover — 白底深字 */
-  #nav.nav-dark-mode a.contact:hover {
-    background: #fff;
-    border-color: transparent;
-    color: #222 !important;
-    box-shadow:
-      0 2px 6px rgba(0,0,0,0.10),
-      0 8px 18px rgba(0,0,0,0.08);
-  }
+      /* 深色頁 — 透明底＋白色細框 */
+      #nav.nav-dark-mode a.contact {
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.55);
+        color: #fff;
+        box-shadow: none;
+      }
 
-  /* ── Hamburger ── */
-  .nav-hamburger {
-    display: none;
-    flex-direction: column;
-    justify-content: center;
-    gap: 5px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 6px;
-    z-index: 401;
-    flex-shrink: 0;
-  }
+      /* 深色頁 hover — 白底深字 */
+      #nav.nav-dark-mode a.contact:hover {
+        background: #fff;
+        border-color: transparent;
+        color: #222 !important;
+        box-shadow:
+          0 2px 6px rgba(0, 0, 0, 0.1),
+          0 8px 18px rgba(0, 0, 0, 0.08);
+      }
 
-  .nav-hamburger span {
-    display: block;
-    width: 22px;
-    height: 1.5px;
-    background: var(--nav-fg, #3a3a4a);
-    border-radius: 2px;
-    transition: transform 0.3s ease, opacity 0.3s ease;
-    transform-origin: center;
-  }
+      /* ── Hamburger ── */
+      .nav-hamburger {
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        gap: 5px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 6px;
+        z-index: 401;
+        flex-shrink: 0;
+      }
 
-  .nav-hamburger.is-open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
-  .nav-hamburger.is-open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
-  .nav-hamburger.is-open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+      .nav-hamburger span {
+        display: block;
+        width: 22px;
+        height: 1.5px;
+        background: var(--nav-fg, #3a3a4a);
+        border-radius: 2px;
+        transition:
+          transform 0.3s ease,
+          opacity 0.3s ease;
+        transform-origin: center;
+      }
 
-  .nav-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.45);
-    z-index: 350;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
+      .nav-hamburger.is-open span:nth-child(1) {
+        transform: translateY(6.5px) rotate(45deg);
+      }
+      .nav-hamburger.is-open span:nth-child(2) {
+        opacity: 0;
+        transform: scaleX(0);
+      }
+      .nav-hamburger.is-open span:nth-child(3) {
+        transform: translateY(-6.5px) rotate(-45deg);
+      }
 
-  .nav-overlay.is-open { opacity: 1; }
+      .nav-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        z-index: 350;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
 
-  /* ════════ GRID 容器：置中 + 限制最大寬度 ════════ */
-  .grid-wrap {
-    max-width: 1080px;
-    margin: 0 auto;
-    padding: clamp(100px, 16vw, 250px) 24px 80px;
-  }
+      .nav-overlay.is-open {
+        opacity: 1;
+      }
 
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(var(--cols), 1fr);
-    gap: var(--gap);
-  }
+      /* ════════ GRID 容器：置中 + 限制最大寬度 ════════ */
+      .grid-wrap {
+        max-width: 1080px;
+        margin: 0 auto;
+        padding: clamp(100px, 16vw, 250px) 24px 80px;
+      }
 
-  /* ════════ CARD ════════ */
-  .card {
-    background: rgba(255,255,255,0.82);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-radius: var(--card-radius);
-    overflow: hidden;
-    cursor: pointer;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.07);
-    transition: box-shadow 0.35s ease, transform 0.35s ease;
-  }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(var(--cols), 1fr);
+        gap: var(--gap);
+      }
 
-  .card:hover {
-    box-shadow: 0 12px 48px rgba(0,0,0,0.13);
-    transform: translateY(-3px);
-  }
+      /* ════════ CARD ════════ */
+      .card {
+        background: rgba(255, 255, 255, 0.82);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-radius: var(--card-radius);
+        overflow: hidden;
+        cursor: pointer;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.07);
+        transition:
+          box-shadow 0.35s ease,
+          transform 0.35s ease;
+      }
 
-  /* 圖片區 */
-  .card-image {
-    position: relative;
-    aspect-ratio: var(--img-ratio);
-    overflow: hidden;
-    border-radius: var(--card-radius) var(--card-radius) 0 0;
-    background: #e8e8ec;
-  }
+      .card:hover {
+        box-shadow: 0 12px 48px rgba(0, 0, 0, 0.13);
+        transform: translateY(-3px);
+      }
 
-  .card-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    transform: scale(1);
-    transform-origin: center;
-    transition: transform 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  }
+      /* 圖片區 */
+      .card-image {
+        position: relative;
+        aspect-ratio: var(--img-ratio);
+        overflow: hidden;
+        border-radius: var(--card-radius) var(--card-radius) 0 0;
+        background: #e8e8ec;
+      }
 
-  .card:hover .card-image img { transform: scale(var(--scale)); }
+      .card-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        transform: scale(1);
+        transform-origin: center;
+        transition: transform 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      }
 
-  /* 黑色 hover 覆蓋 */
-  .card-image::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: var(--overlay);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    pointer-events: none;
-  }
+      .card:hover .card-image img {
+        transform: scale(var(--scale));
+      }
 
-  .card:hover .card-image::after { opacity: 1; }
+      /* 黑色 hover 覆蓋 */
+      .card-image::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: var(--overlay);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+      }
 
-  /* 文字區 */
-  .card-body {
-    padding: 16px 20px 20px;
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 12px;
-  }
+      .card:hover .card-image::after {
+        opacity: 1;
+      }
 
-  .card-text { flex: 1; min-width: 0; }
+      /* 文字區 */
+      .card-body {
+        padding: 16px 20px 20px;
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 12px;
+      }
 
-  .card-tag {
-    font-size: 11px;
-    font-weight: 400;
-    letter-spacing: 0.14em;
-    color: #8899bb;
-    margin-bottom: 4px;
-  }
+      .card-text {
+        flex: 1;
+        min-width: 0;
+      }
 
-  .card-title {
-    font-size: 18px;
-    font-weight: 400;
-    letter-spacing: 0.1em;
-    color: #111;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
+      .card-tag {
+        font-size: 11px;
+        font-weight: 400;
+        letter-spacing: 0.14em;
+        color: #8899bb;
+        margin-bottom: 4px;
+      }
 
-  /* 外部連結按鈕 */
-  .card-link {
-    flex-shrink: 0;
-    width: 40px;
-    height: 40px;
-    background: #111;
-    border-radius: 9px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-decoration: none;
-    transition: background 0.2s, transform 0.2s;
-  }
+      .card-title {
+        font-size: 18px;
+        font-weight: 400;
+        letter-spacing: 0.1em;
+        color: #111;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
 
-  .card-link:hover { background: #333; transform: scale(1.08); }
+      /* 外部連結按鈕 */
+      .card-link {
+        flex-shrink: 0;
+        width: 40px;
+        height: 40px;
+        background: #111;
+        border-radius: 9px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        transition:
+          background 0.2s,
+          transform 0.2s;
+      }
 
-  .card-link svg { width: 16px; height: 16px; fill: #fff; }
+      .card-link:hover {
+        background: #333;
+        transform: scale(1.08);
+      }
 
-  /* ── Tablet (769px – 1024px) ── */
-  @media (min-width: 769px) and (max-width: 1024px) {
-    :root { --gap: 40px; }
-    .grid-wrap { padding-left: 20px; padding-right: 20px; }
-  }
+      .card-link svg {
+        width: 16px;
+        height: 16px;
+        fill: #fff;
+      }
 
-  @media (max-width: 768px) {
-    :root { --cols: 1; --gap: 32px; }
-    #nav {
-      top: 0;
-      padding: 14px 20px;
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-    }
-    .nav-hamburger { display: flex; }
-    .nav-overlay { display: block; pointer-events: none; }
-    .nav-overlay.is-open { pointer-events: auto; }
-    .nav-links {
-      position: fixed;
-      top: 0; right: -100%;
-      width: min(72vw, 280px);
-      height: 100dvh;
-      background: rgba(249,248,246,0.97);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      flex-direction: column;
-      align-items: flex-start;
-      justify-content: center;
-      gap: 4px;
-      padding: 80px 36px 60px;
-      z-index: 400;
-      transition: right 0.38s cubic-bezier(0.4,0,0.2,1);
-    }
-    .nav-links.is-open { right: 0; }
-    .nav-links a {
-      font-size: 11px !important;
-      letter-spacing: 0.32em;
-      padding: 12px 0 !important;
-      color: #3a3a4a !important;
-      border-bottom: 1px solid rgba(0,0,0,0.07);
-      width: 100%;
-    }
-    .nav-links a:last-child { border-bottom: none; }
-    #nav-contact {
-      background: transparent !important;
-      border: 1px solid rgba(30,30,46,0.3) !important;
-      border-radius: 24px !important;
-      padding: 10px 18px !important;
-      margin-top: 20px;
-      align-self: flex-start;
-    }
-    /* grid 在手機 nav 縮到頂，padding-top 改小 */
-    .grid-wrap { padding: 90px 16px 48px; }
-    /* 卡片標題允許換行 */
-    .card-title {
-      white-space: normal;
-      font-size: 16px;
-    }
-    .card-body { padding: 14px 16px 16px; }
-  }
+      /* ── Tablet (769px – 1024px) ── */
+      @media (min-width: 769px) and (max-width: 1024px) {
+        :root {
+          --gap: 40px;
+        }
+        .grid-wrap {
+          padding-left: 20px;
+          padding-right: 20px;
+        }
+      }
 
-  @media (max-width: 480px) {
-    :root { --gap: 20px; }
-    .grid-wrap { padding: 80px 12px 40px; }
-    .card-radius { --card-radius: 16px; }
-    .card-title { font-size: 14px; }
-    .card-tag { font-size: 10px; }
-    .card-link { width: 36px; height: 36px; border-radius: 8px; }
-    .card-link svg { width: 14px; height: 14px; }
-  }
-</style>
-</head>
-<body>
+      @media (max-width: 768px) {
+        :root {
+          --cols: 1;
+          --gap: 32px;
+        }
+        #nav {
+          top: 0;
+          padding: 14px 20px;
+          flex-direction: row;
+          justify-content: space-between;
+          align-items: center;
+          gap: 12px;
+        }
+        .nav-hamburger {
+          display: flex;
+        }
+        .nav-overlay {
+          display: block;
+          pointer-events: none;
+        }
+        .nav-overlay.is-open {
+          pointer-events: auto;
+        }
+        .nav-links {
+          position: fixed;
+          top: 0;
+          right: -100%;
+          width: min(72vw, 280px);
+          height: 100dvh;
+          background: rgba(249, 248, 246, 0.97);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          flex-direction: column;
+          align-items: flex-start;
+          justify-content: center;
+          gap: 4px;
+          padding: 80px 36px 60px;
+          z-index: 400;
+          transition: right 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .nav-links.is-open {
+          right: 0;
+        }
+        .nav-links a {
+          font-size: 11px !important;
+          letter-spacing: 0.32em;
+          padding: 12px 0 !important;
+          color: #3a3a4a !important;
+          border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+          width: 100%;
+        }
+        .nav-links a:last-child {
+          border-bottom: none;
+        }
+        #nav-contact {
+          background: transparent !important;
+          border: 1px solid rgba(30, 30, 46, 0.3) !important;
+          border-radius: 24px !important;
+          padding: 10px 18px !important;
+          margin-top: 20px;
+          align-self: flex-start;
+        }
+        /* grid 在手機 nav 縮到頂，padding-top 改小 */
+        .grid-wrap {
+          padding: 100px 16px 48px;
+        }
+        /* 卡片標題允許換行 */
+        .card-title {
+          white-space: normal;
+          font-size: 16px;
+        }
+        .card-body {
+          padding: 14px 16px 16px;
+        }
+      }
 
-<!-- 粒子背景 canvas -->
-<canvas id="particle-canvas"></canvas>
+      @media (max-width: 480px) {
+        :root {
+          --gap: 20px;
+        }
+        .grid-wrap {
+          padding: 100px 12px 40px;
+        }
+        .card-radius {
+          --card-radius: 16px;
+        }
+        .card-title {
+          font-size: 14px;
+        }
+        .card-tag {
+          font-size: 10px;
+        }
+        .card-link {
+          width: 36px;
+          height: 36px;
+          border-radius: 8px;
+        }
+        .card-link svg {
+          width: 14px;
+          height: 14px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- 粒子背景 canvas -->
+    <canvas id="particle-canvas"></canvas>
 
-<div id="cursor"></div>
+    <div id="cursor"></div>
 
-<div class="page">
-  <!-- NAV -->
-  <nav id="nav">
-    <button class="nav-hamburger" id="nav-hamburger" aria-label="開啟選單" aria-expanded="false">
-      <span></span><span></span><span></span>
-    </button>
-    <div class="nav-overlay" id="nav-overlay"></div>
-    <div class="nav-links" id="nav-links">
-      <a href="./index.html">HOME</a>
-      <a href="./ui.html" class="nav-active">MOBILE</a>
-      <a href="./web.html" >WEB</a>
-      <a href="./ill.html">ILLUSTRATION</a>
-      <a href="./photography.html">PHOTOGRAPHY</a>
+    <div class="page">
+      <!-- NAV -->
+      <nav id="nav">
+        <button
+          class="nav-hamburger"
+          id="nav-hamburger"
+          aria-label="開啟選單"
+          aria-expanded="false"
+        >
+          <span></span><span></span><span></span>
+        </button>
+        <div class="nav-overlay" id="nav-overlay"></div>
+        <div class="nav-links" id="nav-links">
+          <a href="./index.html">HOME</a>
+          <a href="./ui.html" class="nav-active">MOBILE</a>
+          <a href="./web.html">WEB</a>
+          <a href="./ill.html">ILLUSTRATION</a>
+          <a href="./photography.html">PHOTOGRAPHY</a>
+        </div>
+        <a href="./contact.html" class="contact" id="nav-contact">CONTACT</a>
+      </nav>
+
+      <!-- CARD GRID -->
+      <div class="grid-wrap">
+        <div class="grid" id="grid"></div>
+      </div>
     </div>
-    <a href="./contact.html" class="contact" id="nav-contact">CONTACT</a>
-  </nav>
 
-  <!-- CARD GRID -->
-  <div class="grid-wrap">
-    <div class="grid" id="grid"></div>
-  </div>
-</div>
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
-<!-- Three.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-
-<script>
-/* ══════════════════════════════
+    <script>
+      /* ══════════════════════════════
    粒子背景
 ══════════════════════════════ */
-const isMobile = window.innerWidth < 769;
-const PARTICLE_COUNT = isMobile ? 3000 : 12000;
-const RADIUS = 200;
+      const isMobile = window.innerWidth < 769;
+      const PARTICLE_COUNT = isMobile ? 3000 : 12000;
+      const RADIUS = 200;
 
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(58, innerWidth / innerHeight, 0.1, 2000);
-camera.position.z = 340;
-
-const canvas = document.getElementById('particle-canvas');
-const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, canvas });
-renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-renderer.setSize(innerWidth, innerHeight);
-renderer.setClearColor(0x000000, 0);
-
-function randG() {
-  let u = 0, v = 0;
-  while (!u) u = Math.random();
-  while (!v) v = Math.random();
-  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
-}
-
-function generateCloud(r) {
-  const pts = [];
-  const numClusters = 6;
-  const perCluster  = Math.floor(PARTICLE_COUNT / numClusters);
-  for (let c = 0; c < numClusters; c++) {
-    const cx = randG() * r * 0.38;
-    const cy = randG() * r * 0.22;
-    const cz = randG() * r * 0.38;
-    const clusterR = r * (0.18 + Math.random() * 0.32);
-    for (let i = 0; i < perCluster; i++) {
-      pts.push(
-        cx + randG() * clusterR,
-        cy + randG() * clusterR * 0.6,
-        cz + randG() * clusterR
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(
+        58,
+        innerWidth / innerHeight,
+        0.1,
+        2000,
       );
-    }
-  }
-  while (pts.length < PARTICLE_COUNT * 3) {
-    pts.push(randG() * r * 0.55, randG() * r * 0.3, randG() * r * 0.55);
-  }
-  return pts;
-}
+      camera.position.z = 340;
 
-const geometry = new THREE.BufferGeometry();
-const positions = new Float32Array(PARTICLE_COUNT * 3);
-const aColors   = new Float32Array(PARTICLE_COUNT * 3);
-const sizes     = new Float32Array(PARTICLE_COUNT);
+      const canvas = document.getElementById("particle-canvas");
+      const renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        alpha: true,
+        canvas,
+      });
+      renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+      renderer.setSize(innerWidth, innerHeight);
+      renderer.setClearColor(0x000000, 0);
 
-const initPts = generateCloud(RADIUS);
-for (let i = 0; i < PARTICLE_COUNT; i++) {
-  positions[i*3]   = initPts[i*3];
-  positions[i*3+1] = initPts[i*3+1];
-  positions[i*3+2] = initPts[i*3+2];
+      function randG() {
+        let u = 0,
+          v = 0;
+        while (!u) u = Math.random();
+        while (!v) v = Math.random();
+        return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+      }
 
-  const t = Math.random();
-  aColors[i*3]   = 0.31 + t * 0.1;
-  aColors[i*3+1] = 0.31 + t * 0.1;
-  aColors[i*3+2] = 0.31 + t * 0.1;
+      function generateCloud(r) {
+        const pts = [];
+        const numClusters = 6;
+        const perCluster = Math.floor(PARTICLE_COUNT / numClusters);
+        for (let c = 0; c < numClusters; c++) {
+          const cx = randG() * r * 0.38;
+          const cy = randG() * r * 0.22;
+          const cz = randG() * r * 0.38;
+          const clusterR = r * (0.18 + Math.random() * 0.32);
+          for (let i = 0; i < perCluster; i++) {
+            pts.push(
+              cx + randG() * clusterR,
+              cy + randG() * clusterR * 0.6,
+              cz + randG() * clusterR,
+            );
+          }
+        }
+        while (pts.length < PARTICLE_COUNT * 3) {
+          pts.push(randG() * r * 0.55, randG() * r * 0.3, randG() * r * 0.55);
+        }
+        return pts;
+      }
 
-  sizes[i] = 1 + Math.random() * 2.5;
-}
+      const geometry = new THREE.BufferGeometry();
+      const positions = new Float32Array(PARTICLE_COUNT * 3);
+      const aColors = new Float32Array(PARTICLE_COUNT * 3);
+      const sizes = new Float32Array(PARTICLE_COUNT);
 
-geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-geometry.setAttribute('aColor',   new THREE.BufferAttribute(aColors, 3));
-geometry.setAttribute('size',     new THREE.BufferAttribute(sizes, 1));
+      const initPts = generateCloud(RADIUS);
+      for (let i = 0; i < PARTICLE_COUNT; i++) {
+        positions[i * 3] = initPts[i * 3];
+        positions[i * 3 + 1] = initPts[i * 3 + 1];
+        positions[i * 3 + 2] = initPts[i * 3 + 2];
 
-const material = new THREE.ShaderMaterial({
-  uniforms: {
-    uTime:       { value: 0 },
-    uPixelRatio: { value: renderer.getPixelRatio() }
-  },
-  vertexShader: `
+        const t = Math.random();
+        aColors[i * 3] = 0.31 + t * 0.1;
+        aColors[i * 3 + 1] = 0.31 + t * 0.1;
+        aColors[i * 3 + 2] = 0.31 + t * 0.1;
+
+        sizes[i] = 1 + Math.random() * 2.5;
+      }
+
+      geometry.setAttribute(
+        "position",
+        new THREE.BufferAttribute(positions, 3),
+      );
+      geometry.setAttribute("aColor", new THREE.BufferAttribute(aColors, 3));
+      geometry.setAttribute("size", new THREE.BufferAttribute(sizes, 1));
+
+      const material = new THREE.ShaderMaterial({
+        uniforms: {
+          uTime: { value: 0 },
+          uPixelRatio: { value: renderer.getPixelRatio() },
+        },
+        vertexShader: `
     attribute float size;
     attribute vec3 aColor;
     varying vec3 vColor;
@@ -532,7 +665,7 @@ const material = new THREE.ShaderMaterial({
       gl_PointSize = size * uPixelRatio * (260.0 / -mvPos.z);
     }
   `,
-  fragmentShader: `
+        fragmentShader: `
     varying vec3 vColor;
     varying float vDepthFade;
     void main() {
@@ -545,78 +678,80 @@ const material = new THREE.ShaderMaterial({
       gl_FragColor = vec4(vColor, alpha);
     }
   `,
-  transparent: true,
-  depthWrite: false,
-  blending: THREE.NormalBlending,
-  vertexColors: false
-});
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.NormalBlending,
+        vertexColors: false,
+      });
 
-const points = new THREE.Points(geometry, material);
-scene.add(points);
+      const points = new THREE.Points(geometry, material);
+      scene.add(points);
 
-let rotVelX = 0, rotVelY = 0;
-const clock = new THREE.Clock();
+      let rotVelX = 0,
+        rotVelY = 0;
+      const clock = new THREE.Clock();
 
-window.addEventListener('resize', () => {
-  camera.aspect = innerWidth / innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(innerWidth, innerHeight);
-});
+      window.addEventListener("resize", () => {
+        camera.aspect = innerWidth / innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(innerWidth, innerHeight);
+      });
 
-function animateParticles() {
-  requestAnimationFrame(animateParticles);
-  const t = clock.getElapsedTime();
-  material.uniforms.uTime.value = t;
-  rotVelY += 0.0008;
-  rotVelX += Math.sin(t * 0.25) * 0.00006;
-  rotVelX *= 0.90;
-  rotVelY *= 0.60;
-  points.rotation.x += rotVelX;
-  points.rotation.y += rotVelY;
-  renderer.render(scene, camera);
-}
-animateParticles();
+      function animateParticles() {
+        requestAnimationFrame(animateParticles);
+        const t = clock.getElapsedTime();
+        material.uniforms.uTime.value = t;
+        rotVelY += 0.0008;
+        rotVelX += Math.sin(t * 0.25) * 0.00006;
+        rotVelX *= 0.9;
+        rotVelY *= 0.6;
+        points.rotation.x += rotVelX;
+        points.rotation.y += rotVelY;
+        renderer.render(scene, camera);
+      }
+      animateParticles();
 
-
-/* ══════════════════════════════
+      /* ══════════════════════════════
    卡片資料 ── 在這裡替換
 ══════════════════════════════ */
-const cards = [
-    {
-    src:   './pic/6 (6).webp',
-    tag:   '您旅遊的最佳小幫手',
-    title: '3GT APP',
-    href:  './app-3.html'
-  },
-  
-  {
-    src:   './pic/6 (7).webp',
-    tag:   '快速點餐任你行',
-    title: '一風堂點餐APP',
-    href:  './app-2.html'
-  },
+      const cards = [
+        {
+          src: "./pic/6 (6).webp",
+          tag: "您旅遊的最佳小幫手",
+          title: "3GT APP",
+          href: "./app-3.html",
+        },
 
-  {
-    src:   './pic/6 (9).webp',
-    tag:   '全新風格新感受',
-    title: 'YZU APP RENEW',
-    href:  './app-4.html'
-  },
-  {
-    src:   './pic/6 (8).webp',
-    tag:   '追V一手掌握',
-    title: 'HOLOLIFE',
-    href:  './app-1.html'
-  },
-];
+        {
+          src: "./pic/6 (7).webp",
+          tag: "快速點餐任你行",
+          title: "一風堂點餐APP",
+          href: "./app-2.html",
+        },
 
-const grid = document.getElementById('grid');
-cards.forEach(({ src, tag, title, href }) => {
-  const card = document.createElement('div');
-  card.className = 'card';
-  card.style.cursor = 'pointer';
-  card.addEventListener('click', () => { window.open(href, '_blank'); });
-  card.innerHTML = `
+        {
+          src: "./pic/6 (9).webp",
+          tag: "全新風格新感受",
+          title: "YZU APP RENEW",
+          href: "./app-4.html",
+        },
+        {
+          src: "./pic/6 (8).webp",
+          tag: "追V一手掌握",
+          title: "HOLOLIFE",
+          href: "./app-1.html",
+        },
+      ];
+
+      const grid = document.getElementById("grid");
+      cards.forEach(({ src, tag, title, href }) => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.style.cursor = "pointer";
+        card.addEventListener("click", () => {
+          window.open(href, "_blank");
+        });
+        card.innerHTML = `
     <div class="card-image">
       <img src="${src}" alt="${title}" loading="lazy">
     </div>
@@ -630,58 +765,62 @@ cards.forEach(({ src, tag, title, href }) => {
       </a>
     </div>
   `;
-  grid.appendChild(card);
-});
+        grid.appendChild(card);
+      });
 
-/* ══════════════════════════════
+      /* ══════════════════════════════
    Hamburger Menu
 ══════════════════════════════ */
-const hamburger  = document.getElementById('nav-hamburger');
-const navDrawer  = document.getElementById('nav-links');
-const navOverlay = document.getElementById('nav-overlay');
+      const hamburger = document.getElementById("nav-hamburger");
+      const navDrawer = document.getElementById("nav-links");
+      const navOverlay = document.getElementById("nav-overlay");
 
-function openMenu() {
-  hamburger.classList.add('is-open');
-  navDrawer.classList.add('is-open');
-  navOverlay.classList.add('is-open');
-  hamburger.setAttribute('aria-expanded', 'true');
-  document.body.style.overflow = 'hidden';
-}
+      function openMenu() {
+        hamburger.classList.add("is-open");
+        navDrawer.classList.add("is-open");
+        navOverlay.classList.add("is-open");
+        hamburger.setAttribute("aria-expanded", "true");
+        document.body.style.overflow = "hidden";
+      }
 
-function closeMenu() {
-  hamburger.classList.remove('is-open');
-  navDrawer.classList.remove('is-open');
-  navOverlay.classList.remove('is-open');
-  hamburger.setAttribute('aria-expanded', 'false');
-  document.body.style.overflow = '';
-}
+      function closeMenu() {
+        hamburger.classList.remove("is-open");
+        navDrawer.classList.remove("is-open");
+        navOverlay.classList.remove("is-open");
+        hamburger.setAttribute("aria-expanded", "false");
+        document.body.style.overflow = "";
+      }
 
-hamburger.addEventListener('click', () => {
-  hamburger.classList.contains('is-open') ? closeMenu() : openMenu();
-});
+      hamburger.addEventListener("click", () => {
+        hamburger.classList.contains("is-open") ? closeMenu() : openMenu();
+      });
 
-navOverlay.addEventListener('click', closeMenu);
-navDrawer.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMenu));
+      navOverlay.addEventListener("click", closeMenu);
+      navDrawer
+        .querySelectorAll("a")
+        .forEach((a) => a.addEventListener("click", closeMenu));
 
-/* ── Custom cursor ── */
-const cursor = document.getElementById('cursor');
-if (cursor) {
-  document.addEventListener('mousemove', (e) => {
-    cursor.style.left = e.clientX + 'px';
-    cursor.style.top  = e.clientY + 'px';
-  });
-}
+      /* ── Custom cursor ── */
+      const cursor = document.getElementById("cursor");
+      if (cursor) {
+        document.addEventListener("mousemove", (e) => {
+          cursor.style.left = e.clientX + "px";
+          cursor.style.top = e.clientY + "px";
+        });
+      }
 
-/* ── Nav active (click-based) ── */
-const navLinkEls = Array.from(document.querySelectorAll('#nav a')).filter(a => !a.classList.contains('contact'));
+      /* ── Nav active (click-based) ── */
+      const navLinkEls = Array.from(document.querySelectorAll("#nav a")).filter(
+        (a) => !a.classList.contains("contact"),
+      );
 
-navLinkEls.forEach(a => {
-  a.addEventListener('click', (e) => {
-    navLinkEls.forEach(l => l.classList.remove('nav-active'));
-    a.classList.add('nav-active');
-    if (a.getAttribute('href') === '#') e.preventDefault();
-  });
-});
-</script>
-</body>
+      navLinkEls.forEach((a) => {
+        a.addEventListener("click", (e) => {
+          navLinkEls.forEach((l) => l.classList.remove("nav-active"));
+          a.classList.add("nav-active");
+          if (a.getAttribute("href") === "#") e.preventDefault();
+        });
+      });
+    </script>
+  </body>
 </html>
