@@ -759,24 +759,23 @@ body::after {
   display: flex;
   flex-direction: row;
   align-items: center;
-  padding: clamp(60px, 8vh, 100px) clamp(40px, 5vw, 80px);
+  justify-content: flex-start;
+  padding: 150px clamp(40px, 5vw, 80px) 40px;
   gap: clamp(32px, 4vw, 64px);
   z-index: 15;
   opacity: 0;
   will-change: opacity;
   pointer-events: none;
-  /* background:
-    linear-gradient(rgba(0, 0, 0, 0.80), rgba(0, 0, 0, 0.80)),
-    url('BK-1.png') center center / cover no-repeat; */
 }
 
 /* ── Left column: 2×2 staggered cards ── */
 .exp-left {
-  flex: 0 0 48%;
+  flex: 0 0 42%;
+  min-width: 0;
 }
 
 .exp-grid {
-  margin-left: clamp(0px, 15vw, 220px);
+  margin-left: clamp(0px, 3vw, 40px);
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: clamp(12px, 1.8vw, 24px);
@@ -785,7 +784,7 @@ body::after {
 
 /* Even cards (02, 04) drop down to create stagger */
 .exp-card--offset {
-  margin-top: clamp(60px, 8vw, 110px);
+  margin-top: min(70px, 8vh);
 }
 
 .exp-card {
@@ -851,33 +850,38 @@ body::after {
 /* ── Right column: big title + divider + current ── */
 .exp-right {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: clamp(20px, 2.5vw, 36px);
   align-items: flex-start;
+  overflow: hidden;
 }
 
 .exp-big-title {
-  margin-left: clamp(0px, 10vw, 160px);
+  margin-left: clamp(0px, 4vw, 60px);
   font-family: var(--font-part);
   font-style: italic;
   font-weight: 300;
-  font-size: clamp(36px, 5.2vw, 82px);
-  letter-spacing: 0.32em;
+  font-size: clamp(32px, 4.5vw, 72px);
+  letter-spacing: 0.28em;
   color: rgba(218,214,206,0.92);
   white-space: nowrap;
   line-height: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .exp-big-rule {
-  margin-left: clamp(0px, 10vw, 160px);
+  margin-left: clamp(0px, 4vw, 60px);
   width: 100%;
   height: 1px;
   background: linear-gradient(to right, rgba(255,255,255,0.22), transparent);
 }
 
 .exp-current {
-  margin-left: clamp(0px, 10vw, 160px) !important;
+  margin-left: clamp(0px, 4vw, 60px) !important;
   display: flex;
   flex-direction: column;
   gap: clamp(8px, 1vw, 14px);
@@ -949,7 +953,7 @@ body::after {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: clamp(80px, 10vh, 120px) clamp(24px, 5vw, 80px) clamp(32px, 4vh, 60px);
+  padding: 150px clamp(40px, 6vw, 100px) clamp(32px, 4vh, 60px);
   z-index: 15;
   opacity: 0;
   will-change: opacity;
@@ -966,7 +970,6 @@ body::after {
     rgba(255, 255, 255, 0.3) 100%
   ),
   url('./pic/BK.webp') center center / cover no-repeat;
- 
 }
 
 .am-wrap {
@@ -983,7 +986,7 @@ body::after {
 .am-title {
   grid-column: 1;
   grid-row: 1;
-  margin-left: clamp(-60px, -10vw, 0px);
+  margin-left: clamp(-30px, -2vw, 0px);
   font-family: var(--font-part);
   font-size: clamp(40px, 6vw, 80px);
   font-weight: 300;
@@ -995,14 +998,14 @@ body::after {
 }
 
 .am-rule {
-  margin-left: clamp(-60px, -10vw, 0px);
+  margin-left: clamp(-30px, -2vw, 0px);
   width: 100%;
   height: 1px;
   background: linear-gradient(to right, rgba(255, 255, 255, 0.22), transparent);
 }
 
 .am-left {
-  margin-left: clamp(-40px, -5vw, 0px);
+  margin-left: clamp(-20px, -2vw, 0px);
   grid-column: 1;
   grid-row: 3;
   display: flex;
@@ -1066,17 +1069,14 @@ body::after {
   line-height: 2;
   letter-spacing: 0.2em;
   color: #fff;
-  transform: translateX(clamp(0px, 5vw, 80px)); 
 }
 
 .am-gallery {
-
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: clamp(10px, 1.6vw, 20px);
   width: min(100%, 470px);
   align-self: flex-end;
-  transform: translateX(clamp(0px, 5vw, 80px));
 }
 
 .am-tile {
@@ -1157,7 +1157,7 @@ img[src="./pic/BK.png"] {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: clamp(80px, 10vh, 120px) clamp(40px, 6vw, 100px) clamp(40px, 6vh, 80px);
+  padding: 150px clamp(40px, 6vw, 100px) clamp(40px, 6vh, 80px);
   z-index: 15;
   opacity: 0;
   will-change: opacity;
@@ -1194,7 +1194,7 @@ img[src="./pic/BK.png"] {
 
 /* Header row */
 .sk-header {
-  margin-top: clamp(-60px, -10vh, -150px);
+  margin-top: clamp(-20px, -3vh, -60px);
   display: flex;
   align-items: baseline;
   gap: clamp(20px, 3vw, 48px);
@@ -1453,7 +1453,7 @@ img[src="./pic/BK.png"] {
 @media (max-width: 860px) {
   /* Experience */
   #experience-content {
-    padding: 70px clamp(20px, 4vw, 40px) 32px;
+    padding: 90px clamp(20px, 4vw, 40px) 32px;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     align-items: flex-start;
@@ -1465,7 +1465,7 @@ img[src="./pic/BK.png"] {
 
   /* About */
   #about-content {
-    padding: 70px clamp(20px, 4vw, 40px) 32px;
+    padding: 100px clamp(20px, 4vw, 40px) 32px;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     align-items: flex-start;
@@ -1482,6 +1482,7 @@ img[src="./pic/BK.png"] {
     white-space: normal;
     font-size: clamp(2.2rem, 9vw, 3.6rem);
     letter-spacing: 0.38em;
+    margin-left: 0 !important;
   }
   .am-rule   { grid-column: 1; grid-row: 2; margin-left: 0 !important; }
   .am-right  { grid-column: 1; grid-row: 3; }
@@ -1494,6 +1495,7 @@ img[src="./pic/BK.png"] {
 
   /* Skills */
   #skills-content {
+    padding-top: 90px;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     align-items: flex-start;
@@ -1572,7 +1574,7 @@ img[src="./pic/BK.png"] {
   #experience-content,
   #about-content,
   #skills-content {
-    padding-top: 64px;
+    padding-top: 100px;
     padding-left: 16px;
     padding-right: 16px;
     padding-bottom: 32px;
@@ -1653,6 +1655,8 @@ img[src="./pic/BK.png"] {
   .am-portrait { margin-top: 0; aspect-ratio: auto; max-height: 140px; }
 }
 
+/* ── 矮螢幕桌機 padding 由主樣式的固定 150px 處理，不需要額外 query ── */
+
 /* ══════════════════════════════════════════
    MOBILE — 手機專用修正 (≤ 768px)
    確保所有 section 在手機上可以正確顯示與捲動
@@ -1697,7 +1701,7 @@ img[src="./pic/BK.png"] {
     flex-direction: column;
     align-items: flex-start;
     justify-content: flex-start;
-    padding: 70px 20px 40px;
+    padding: 100px 20px 40px;
     overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
@@ -1738,7 +1742,7 @@ img[src="./pic/BK.png"] {
   #about-content {
     align-items: flex-start;
     justify-content: flex-start;
-    padding: 70px 20px 40px;
+    padding: 100px 20px 40px;
     overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
@@ -1797,6 +1801,7 @@ img[src="./pic/BK.png"] {
   .am-portrait {
     width: min(100%, 320px);
     margin-top: 0;
+    aspect-ratio: auto;
   }
 
   .am-caption {
@@ -1809,7 +1814,7 @@ img[src="./pic/BK.png"] {
   #skills-content {
     align-items: flex-start;
     justify-content: flex-start;
-    padding: 70px 20px 40px;
+    padding: 100px 20px 40px;
     overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
