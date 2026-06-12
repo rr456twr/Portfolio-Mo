@@ -163,6 +163,15 @@ function tick() {
   nav.style.setProperty('--nav-fg', `rgb(${navC},${navC},${navC})`);
   syncHamburger(navC);
 
+  /* ── Nav background: 淺色毛玻璃 ↔ 深色毛玻璃 ── */
+  if (darkP > 0.45 && _skillsOp < 0.5) {
+    nav.style.background = `rgba(10,10,15,${0.25 * Math.min(1, (darkP - 0.45) / 0.3)})`;
+  } else if (_skillsOp > 0.3) {
+    nav.style.background = `rgba(249,248,246,${0.25 * Math.min(1, _skillsOp / 0.3)})`;
+  } else {
+    nav.style.background = 'rgba(249,248,246,0.25)';
+  }
+
   // dark-mode class: underline colour follows --nav-fg (white on dark, dark on light)
   if (darkP > 0.45 && _skillsOp < 0.5) {
     nav.classList.add('nav-dark-mode');

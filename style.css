@@ -198,8 +198,12 @@ body::after {
   padding: clamp(24px, 4vw, 32px) clamp(24px, 4vw, 56px);
   gap: clamp(24px, 6vw, 85px);
   z-index: 200;
-  will-change: opacity;
+  will-change: opacity, background;
   --nav-fg: var(--nav-dark);
+  background: rgba(249,248,246,0.25);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  transition: background 0.4s ease;
 }
 
 .nav-links {
